@@ -19,6 +19,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/split/bluetooth/uuid.h>
 #include <zmk/event-manager.h>
 #include <zmk/events/position-state-changed.h>
+#include <zmk/events/keymap-layer-state-changed.h>
 #include <init.h>
 
 static int start_scan(void);
@@ -30,6 +31,8 @@ static struct bt_conn *default_conn;
 static struct bt_uuid_128 uuid = BT_UUID_INIT_128(ZMK_SPLIT_BT_SERVICE_UUID);
 static struct bt_gatt_discover_params discover_params;
 static struct bt_gatt_subscribe_params subscribe_params;
+static u16_t keymap_layer_state_attr_handle;
+static struct keymap_layer_state_data layer_state_data;
 
 static u8_t split_central_notify_func(struct bt_conn *conn,
 			   struct bt_gatt_subscribe_params *params,
@@ -107,7 +110,7 @@ static u8_t split_central_discovery_func(struct bt_conn *conn,
 		if (err) {
 			LOG_ERR("Discover failed (err %d)", err);
 		}
-	} else {
+	} else if (!bt_uuid_cmp(discover_params.uuid, BT_UUID_GATT_CCC)) {
 		subscribe_params.notify = split_central_notify_func;
 		subscribe_params.value = BT_GATT_CCC_NOTIFY;
 		subscribe_params.ccc_handle = attr->handle;
@@ -119,6 +122,17 @@ static u8_t split_central_discovery_func(struct bt_conn *conn,
 			LOG_DBG("[SUBSCRIBED]");
 		}
 
+		memcpy(&uuid, BT_UUID_DECLARE_128(ZMK_SPLIT_BT_LAYER_STATE_UUID), sizeof(uuid));
+		discover_params.uuid = &uuid.uuid;
+		discover_params.start_handle = attr->handle + 1;
+		discover_params.type = BT_GATT_DISCOVER_CHARACTERISTIC;
+		
+		err = bt_gatt_discover(conn, &discover_params);
+		if (err) {
+			LOG_ERR("Discover failed (err %d)", err);
+		}
+	} else {
+		keymap_layer_state_attr_handle = attr->handle;
 		return BT_GATT_ITER_STOP;
 	}
 
@@ -311,3 +325,33 @@ int zmk_split_bt_central_init(struct device *_arg)
 SYS_INIT(zmk_split_bt_central_init,
          APPLICATION,
 		 CONFIG_ZMK_BLE_INIT_PRIORITY);
+
+
+int zmk_split_bt_listener(const struct zmk_event_header *eh)
+{
+	int err;
+
+	if (is_keymap_layer_state_changed(eh)) {
+		const struct keymap_layer_state_changed *ev = cast_keymap_layer_state_changed(eh);
+		LOG_DBG("Write GATT attribute %d for layer state %d default layer %d", keymap_layer_state_attr_handle, ev->data.state, ev->data.default_layer);
+		if (default_conn == NULL || !keymap_layer_state_attr_handle) {
+			LOG_WRN("No connected peripheral to receive layer state update");
+			return -EIO;
+		}
+
+		layer_state_data = ev->data;
+
+		err = bt_gatt_write_without_response(default_conn, keymap_layer_state_attr_handle, &layer_state_data, sizeof(struct keymap_layer_state_data), true);
+		if (err) {
+			LOG_ERR("Unable to write GATT layer state attribute value %d", err);
+			return err;
+		}
+
+		return 0;
+	}
+
+	return -ENOTSUP;
+}
+
+ZMK_LISTENER(zmk_split_bt_central, zmk_split_bt_listener);
+ZMK_SUBSCRIPTION(zmk_split_bt_central, keymap_layer_state_changed);

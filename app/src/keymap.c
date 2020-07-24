@@ -12,6 +12,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include <zmk/event-manager.h>
 #include <zmk/events/position-state-changed.h>
+#include <zmk/events/keymap-layer-state-changed.h>
 #include <zmk/events/sensor-event.h>
 
 static u32_t zmk_keymap_layer_state = 0;
@@ -68,13 +69,22 @@ static struct zmk_behavior_binding zmk_sensor_keymap[ZMK_KEYMAP_LAYERS_LEN][ZMK_
 
 #endif /* ZMK_KEYMAP_HAS_SENSORS */
 
-#define SET_LAYER_STATE(layer, state)                \
-	if (layer >= 32)                                 \
-	{                                                \
-		return -EINVAL;                              \
-	}                                                \
-	WRITE_BIT(zmk_keymap_layer_state, layer, state); \
-	return 0;
+static void raise_state_changed()
+{
+    struct keymap_layer_state_changed *ev = new_keymap_layer_state_changed();
+    ev->data.state = zmk_keymap_layer_state;
+    ev->data.default_layer = zmk_keymap_layer_default;
+    ZMK_EVENT_RAISE(ev);
+}
+
+#define SET_LAYER_STATE(layer, s)                    \
+    if (layer >= 32)                                 \
+    {                                                \
+        return -EINVAL;                              \
+    }                                                \
+    WRITE_BIT(zmk_keymap_layer_state, layer, s);     \
+    raise_state_changed();                           \
+    return 0;
 
 bool zmk_keymap_layer_active(u8_t layer)
 {
@@ -100,6 +110,31 @@ int zmk_keymap_layer_toggle(u8_t layer)
 
   	return zmk_keymap_layer_activate(layer);
 };
+
+int zmk_keymap_layer_set_default(u8_t layer)
+{
+    if (layer >= ZMK_KEYMAP_LAYERS_LEN) {
+        return -EINVAL;
+    }
+
+    zmk_keymap_layer_default = layer;
+
+    raise_state_changed();
+};
+
+int zmk_keymap_set_layer_state(u32_t layer_state)
+{
+	LOG_DBG("%d", layer_state);
+	zmk_keymap_layer_state = layer_state;
+    raise_state_changed();
+
+	return 0;
+}
+
+u32_t zmk_keymap_get_layer_state()
+{
+	return zmk_keymap_layer_state;
+}
 
 bool is_active_position(u32_t position, u8_t layer)
 {
