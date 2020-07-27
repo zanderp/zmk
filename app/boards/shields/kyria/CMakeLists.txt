@@ -1,0 +1,3 @@
+if(CONFIG_SHIELD_KYRIA_LEFT OR CONFIG_SHIELD_KYRIA_RIGHT)
+  target_sources_ifdef(CONFIG_ZMK_DISPLAY_LOGO app PRIVATE logo.c)
+endif()

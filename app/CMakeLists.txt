@@ -18,6 +18,12 @@ include(cmake/zmk_config.cmake)
 find_package(Zephyr REQUIRED HINTS ../zephyr)
 project(zmk)
 
+if (ZMK_EXTRA_MODULES)
+  foreach(mod ${ZMK_EXTRA_MODULES})
+    add_subdirectory(${mod})
+  endforeach()
+endif()
+
 if(EXISTS ${KEYMAP_DIR}/keymap.c)
   target_sources(app PRIVATE ${KEYMAP_DIR}/keymap.c)
 endif()

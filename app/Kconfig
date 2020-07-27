@@ -67,7 +67,7 @@ endif
 
 endmenu
 
-config ZMK_DISPLAY
+menuconfig ZMK_DISPLAY
 	bool "ZMK display support"
 	default n
 	select DISPLAY
@@ -75,6 +75,14 @@ config ZMK_DISPLAY
 	select LVGL_THEMES
 	select LVGL_THEME_MONO
 	select LVGL_OBJ_LABEL
+
+if ZMK_DISPLAY
+
+config ZMK_DISPLAY_LOGO
+	bool "Display the logo on the ZMK splash screen"
+	default n
+
+endif
 
 menu "Split Support"
 
