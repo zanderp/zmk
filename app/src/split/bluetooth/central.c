@@ -10,6 +10,7 @@
 #include <bluetooth/conn.h>
 #include <bluetooth/uuid.h>
 #include <bluetooth/gatt.h>
+#include <bluetooth/hci.h>
 #include <sys/byteorder.h>
 
 #include <logging/log.h>
@@ -194,6 +195,8 @@ static bool split_central_eir_found(struct bt_data *data, void *user_data)
 
 			LOG_DBG("Found the split service");
 
+			zmk_ble_set_peripheral_addr(addr);
+
 			err = bt_le_scan_stop();
 			if (err) {
 				LOG_ERR("Stop LE scan failed (err %d)", err);
@@ -209,7 +212,7 @@ static bool split_central_eir_found(struct bt_data *data, void *user_data)
 				err = bt_conn_le_create(addr, BT_CONN_LE_CREATE_CONN,
 							param, &default_conn);
 				if (err) {
-					LOG_ERR("Create conn failed (err %d)", err);
+					LOG_ERR("Create conn failed (err %d) (create conn? 0x%04x)", err, BT_HCI_OP_LE_CREATE_CONN);
 					start_scan();
 				}
 
