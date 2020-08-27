@@ -1,0 +1,32 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan-mock.h>
+
+&kscan {
+	events = <ZMK_MOCK_PRESS(0,1,300) ZMK_MOCK_PRESS(0,0,300) ZMK_MOCK_RELEASE(0,0,300) ZMK_MOCK_RELEASE(0,1,300)>;
+};
+
+/ {
+	keymap {
+		compatible = "zmk,keymap";
+		label ="Default keymap";
+
+		default_layer {
+			bindings = <
+				&kp B &mo 1 &kp C &kp E
+				&kp D &kp G &kp F &kp Q>;
+		};
+
+		lower_layer {
+			bindings = <
+				&cp M_NEXT &trans &kp O &kp Q
+				&kp L  &kp J &kp P &kp K>;
+		};
+
+		raise_layer {
+			bindings = <
+				&kp W &kp U &kp I &kp N
+				&kp X  &kp M &kp C &kp B>;
+		};
+	};
+};
