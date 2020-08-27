@@ -17,6 +17,7 @@
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
+#include <zmk/ble.h>
 #include <zmk/split/bluetooth/uuid.h>
 #include <zmk/event-manager.h>
 #include <zmk/events/position-state-changed.h>
@@ -209,6 +210,8 @@ static bool split_central_eir_found(struct bt_data *data, void *user_data)
 				split_central_process_connection(default_conn);
 			} else {
 				param = BT_LE_CONN_PARAM(0x0006, 0x0006, 30, 400);
+
+				bt_le_adv_stop();
 				err = bt_conn_le_create(addr, BT_CONN_LE_CREATE_CONN,
 							param, &default_conn);
 				if (err) {
@@ -265,6 +268,8 @@ static void split_central_connected(struct bt_conn *conn, u8_t conn_err)
 	char addr[BT_ADDR_LE_STR_LEN];
 
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+
+	zmk_ble_adv_resume();
 
 	if (conn_err) {
 		LOG_ERR("Failed to connect to %s (%u)", addr, conn_err);

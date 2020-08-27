@@ -4,6 +4,9 @@
 #include <bluetooth/addr.h>
 #include <zmk/keys.h>
 
+int zmk_ble_adv_pause();
+int zmk_ble_adv_resume();
+
 int zmk_ble_identity_clear();
 int zmk_ble_identity_next();
 int zmk_ble_identity_prev();

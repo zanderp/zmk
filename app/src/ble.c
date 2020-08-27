@@ -92,6 +92,32 @@ static bt_addr_le_t peripheral_addr;
 
 static u8_t active_identity = 0;
 
+
+int zmk_ble_adv_pause()
+{
+    int err = bt_le_adv_stop();
+    if (err) {
+        LOG_ERR("Failed to stop advertising (err %d)", err);
+        return err;
+    }
+
+    return 0;
+};
+
+int zmk_ble_adv_resume()
+{
+    struct bt_le_adv_param *adv_params = ZMK_ADV_PARAMS(active_identity + IDENTITY_OFFSET);
+
+    int err = bt_le_adv_start(adv_params, zmk_ble_ad, ARRAY_SIZE(zmk_ble_ad), NULL, 0);
+    if (err)
+    {
+        LOG_ERR("Advertising failed to start (err %d)", err);
+        return err;
+    }
+
+    return 0;
+};
+
 static void disconnect_host_connection(struct bt_conn *conn, void *arg)
 {
     // struct bt_conn_info info;
@@ -129,24 +155,14 @@ static int activate_profile(u8_t index)
         bt_set_name(name);
     }
 
-    struct bt_le_adv_param *adv_params = ZMK_ADV_PARAMS(active_identity + IDENTITY_OFFSET);
-
-    err = bt_le_adv_start(adv_params, zmk_ble_ad, ARRAY_SIZE(zmk_ble_ad), NULL, 0);
-    if (err)
-    {
-        LOG_ERR("Advertising failed to start (err %d)", err);
-        return err;
-    }
-
-    return 0;
+    return zmk_ble_adv_resume();
 };
 
 static int deactivate_profile(u8_t index)
 {
-    int err = bt_le_adv_stop();
+    int err = zmk_ble_adv_pause();
     if (err) {
-        LOG_ERR("Failed to stop advertising (err %d)", err);
-        return err;
+        LOG_WRN("Failed to pause advertising %d", err);
     }
 
     bt_conn_foreach(BT_CONN_TYPE_ALL, disconnect_host_connection, NULL);
@@ -211,7 +227,6 @@ int zmk_ble_identity_prev()
     LOG_DBG("");
     return zmk_ble_identity_select((active_identity + IDENTITY_COUNT - 1) % IDENTITY_COUNT);
 }
-
 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_ROLE_CENTRAL)
 
@@ -427,13 +442,11 @@ static int zmk_ble_init(struct device *_arg)
 #if IS_ENABLED(CONFIG_SETTINGS)
     settings_subsys_init();
 
-    // err = settings_register(&profiles_handler);
-    // if (err) {
-    //     LOG_ERR("Failed to setup the profile settings handler (err %d)", err);
-    //     return err;
-    // }
-    // settings_delete("ble/active_identity");
-    // settings_delete("ble/peripheral_address");
+    err = settings_register(&profiles_handler);
+    if (err) {
+        LOG_ERR("Failed to setup the profile settings handler (err %d)", err);
+        return err;
+    }
 
     settings_load();
 
