@@ -51,14 +51,22 @@ static u8_t passkey_digit = 0;
 #define ZMK_BT_LE_ADV_PARAM(_id, _options, _int_min, _int_max, _peer) \
         ((struct bt_le_adv_param[]) { \
                 ZMK_BT_LE_ADV_PARAM_INIT(_id, _options, _int_min, _int_max, _peer) \
-         })
+        })
 
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_ROLE_CENTRAL)
 #define ZMK_ADV_PARAMS(_id) ZMK_BT_LE_ADV_PARAM(_id, \
                                         BT_LE_ADV_OPT_CONNECTABLE | \
                                         BT_LE_ADV_OPT_ONE_TIME | \
                                         BT_LE_ADV_OPT_USE_NAME, \
                                         BT_GAP_ADV_FAST_INT_MIN_2, \
                                         BT_GAP_ADV_FAST_INT_MAX_2, NULL)
+#else
+#define ZMK_ADV_PARAMS(_id) ZMK_BT_LE_ADV_PARAM(_id, \
+                                        BT_LE_ADV_OPT_CONNECTABLE | \
+                                        BT_LE_ADV_OPT_USE_NAME, \
+                                        BT_GAP_ADV_FAST_INT_MIN_2, \
+                                        BT_GAP_ADV_FAST_INT_MAX_2, NULL)
+#endif
 
 static const struct bt_data zmk_ble_ad[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
@@ -70,18 +78,11 @@ static const struct bt_data zmk_ble_ad[] = {
     ),
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_ROLE_PERIPHERAL)
     BT_DATA_BYTES(BT_DATA_UUID128_ALL,
-                  ZMK_SPLIT_BT_SERVICE_UUID)
+                ZMK_SPLIT_BT_SERVICE_UUID)
 #endif
 };
 
-// #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_ROLE_CENTRAL)
-// #define IDENTITY_OFFSET 1
-// #define IDENTITY_COUNT (CONFIG_BT_ID_MAX - 1)
-// #else
-#define IDENTITY_OFFSET 0
 #define IDENTITY_COUNT CONFIG_BT_ID_MAX
-// #endif
-
 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_ROLE_CENTRAL)
 
@@ -91,7 +92,6 @@ static bt_addr_le_t peripheral_addr;
 
 
 static u8_t active_identity = 0;
-
 
 int zmk_ble_adv_pause()
 {
@@ -106,8 +106,9 @@ int zmk_ble_adv_pause()
 
 int zmk_ble_adv_resume()
 {
-    struct bt_le_adv_param *adv_params = ZMK_ADV_PARAMS(active_identity + IDENTITY_OFFSET);
+    struct bt_le_adv_param *adv_params = ZMK_ADV_PARAMS(active_identity);
 
+    LOG_DBG("");
     int err = bt_le_adv_start(adv_params, zmk_ble_ad, ARRAY_SIZE(zmk_ble_ad), NULL, 0);
     if (err)
     {
@@ -120,12 +121,12 @@ int zmk_ble_adv_resume()
 
 static void disconnect_host_connection(struct bt_conn *conn, void *arg)
 {
-    // struct bt_conn_info info;
-    // bt_conn_get_info(conn, &info);
+    struct bt_conn_info info;
+    bt_conn_get_info(conn, &info);
 
-    // if (info.role != BT_CONN_ROLE_SLAVE) {
-    //     return;
-    // }
+    if (info.role != BT_CONN_ROLE_SLAVE) {
+        return;
+    }
 
     bt_conn_disconnect(conn, BT_HCI_ERR_LOCALHOST_TERM_CONN);
 };
@@ -143,7 +144,6 @@ static int activate_profile(u8_t index)
         active_identity = index;
 
 #if IS_ENABLED(CONFIG_SETTINGS)
-        LOG_DBG("SAVING ONE to %d", active_identity);
         err = settings_save_one("ble/active_identity", &active_identity, sizeof(u8_t));
         if (err) {
             LOG_WRN("Failed to persist active_identity (err %d)", err);
@@ -191,29 +191,27 @@ static void unpair_non_peripheral_bonds(const struct bt_bond_info *info, void *u
     bt_addr_le_to_str(&info->addr, addr, sizeof(addr));
 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_ROLE_CENTRAL)
-    if (bt_addr_le_cmp(&info->addr, &peripheral_addr)) {
+    if (!bt_addr_le_cmp(&info->addr, &peripheral_addr)) {
         LOG_DBG("Skipping unpairing peripheral %s", log_strdup(addr));
         return;
     }
 #endif /* IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_ROLE_CENTRAL) */
 
     LOG_DBG("Unpairing %s", log_strdup(addr));
-    bt_unpair(active_identity + IDENTITY_OFFSET, &info->addr);
+    bt_unpair(active_identity, &info->addr);
 }
 
 int zmk_ble_identity_clear()
 {
     LOG_DBG("");
-	int err = deactivate_profile(active_identity);
-	if (err) {
-		return err;
-	}
+    int err = deactivate_profile(active_identity);
+    if (err) {
+        return err;
+    }
 
-    bt_foreach_bond(active_identity + IDENTITY_OFFSET, unpair_non_peripheral_bonds, NULL);
+    bt_foreach_bond(active_identity, unpair_non_peripheral_bonds, NULL);
 
-    // bt_unpair(active_identity + IDENTITY_OFFSET, NULL);
-	
-	return activate_profile(active_identity);
+    return activate_profile(active_identity);
 };
 
 int zmk_ble_identity_next()
@@ -313,6 +311,12 @@ static void disconnected(struct bt_conn *conn, u8_t reason)
     bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
     LOG_DBG("Disconnected from %s (reason 0x%02x)", log_strdup(addr), reason);
+
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_ROLE_CENTRAL)
+    if (bt_addr_le_cmp(&peripheral_addr, BT_ADDR_LE_ANY) && bt_addr_le_cmp(&peripheral_addr, bt_conn_get_dst(conn))) {
+        zmk_ble_adv_resume();
+    }
+#endif
 }
 
 static void security_changed(struct bt_conn *conn, bt_security_t level,
@@ -401,6 +405,7 @@ static void zmk_ble_ready(int err)
     zmk_ble_identity_select(active_identity);
 }
 
+#if CONFIG_BT_ID_MAX != 1
 static int initialize_identities()
 {
     bt_addr_le_t addrs[CONFIG_BT_ID_MAX];
@@ -426,6 +431,7 @@ static int initialize_identities()
 
     return 0;
 };
+#endif /* CONFIG_BT_ID_MAX != 1 */
 
 static int zmk_ble_init(struct device *_arg)
 {
@@ -452,8 +458,9 @@ static int zmk_ble_init(struct device *_arg)
 
 #endif
 
-
+#if CONFIG_BT_ID_MAX != 1
     initialize_identities();
+#endif /* CONFIG_BT_ID_MAX != 1 */
 
     bt_conn_cb_register(&conn_callbacks);
     bt_conn_auth_cb_register(&zmk_ble_auth_cb_display);

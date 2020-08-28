@@ -73,6 +73,16 @@ static u8_t split_central_notify_func(struct bt_conn *conn,
 	return BT_GATT_ITER_CONTINUE;
 }
 
+static int split_central_subscribe(struct bt_conn *conn)
+{
+	int err = bt_gatt_subscribe(conn, &subscribe_params);
+	if (err && err != -EALREADY) {
+		LOG_ERR("Subscribe failed (err %d)", err);
+	} else {
+		LOG_DBG("[SUBSCRIBED]");
+	}
+}
+
 static u8_t split_central_discovery_func(struct bt_conn *conn,
 			     const struct bt_gatt_attr *attr,
 			     struct bt_gatt_discover_params *params)
@@ -114,12 +124,7 @@ static u8_t split_central_discovery_func(struct bt_conn *conn,
 		subscribe_params.value = BT_GATT_CCC_NOTIFY;
 		subscribe_params.ccc_handle = attr->handle;
 
-		err = bt_gatt_subscribe(conn, &subscribe_params);
-		if (err && err != -EALREADY) {
-			LOG_ERR("Subscribe failed (err %d)", err);
-		} else {
-			LOG_DBG("[SUBSCRIBED]");
-		}
+		split_central_subscribe(conn);
 
 		return BT_GATT_ITER_STOP;
 	}
@@ -139,16 +144,20 @@ static void split_central_process_connection(struct bt_conn *conn) {
 	}
 
 	if (conn == default_conn) {
-		discover_params.uuid = &uuid.uuid;
-		discover_params.func = split_central_discovery_func;
-		discover_params.start_handle = 0x0001;
-		discover_params.end_handle = 0xffff;
-		discover_params.type = BT_GATT_DISCOVER_PRIMARY;
+		if (subscribe_params.value) {
+			split_central_subscribe(conn);
+		} else {
+			discover_params.uuid = &uuid.uuid;
+			discover_params.func = split_central_discovery_func;
+			discover_params.start_handle = 0x0001;
+			discover_params.end_handle = 0xffff;
+			discover_params.type = BT_GATT_DISCOVER_PRIMARY;
 
-		err = bt_gatt_discover(default_conn, &discover_params);
-		if (err) {
-			LOG_ERR("Discover failed(err %d)", err);
-			return;
+			err = bt_gatt_discover(default_conn, &discover_params);
+			if (err) {
+				LOG_ERR("Discover failed(err %d)", err);
+				return;
+			}
 		}
 	}
 
@@ -211,7 +220,6 @@ static bool split_central_eir_found(struct bt_data *data, void *user_data)
 			} else {
 				param = BT_LE_CONN_PARAM(0x0006, 0x0006, 30, 400);
 
-				bt_le_adv_stop();
 				err = bt_conn_le_create(addr, BT_CONN_LE_CREATE_CONN,
 							param, &default_conn);
 				if (err) {
@@ -269,7 +277,6 @@ static void split_central_connected(struct bt_conn *conn, u8_t conn_err)
 
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
-	zmk_ble_adv_resume();
 
 	if (conn_err) {
 		LOG_ERR("Failed to connect to %s (%u)", addr, conn_err);

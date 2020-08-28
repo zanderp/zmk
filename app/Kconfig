@@ -52,18 +52,6 @@ config SETTINGS
 
 config BT_SETTINGS
 	default y
-
-config BT_ID_MAX
-	default 5
-
-config BT_MAX_PAIRED
-	default 6
-
-config BT_KEYS_OVERWRITE_OLDEST
-	default y
-
-config BT_DEVICE_NAME_DYNAMIC
-	default y
 	
 config SYSTEM_WORKQUEUE_STACK_SIZE
 	default 2048
@@ -119,6 +107,9 @@ config ZMK_SPLIT_BLE_ROLE_CENTRAL
 
 if ZMK_SPLIT_BLE_ROLE_CENTRAL
 
+config BT_MAX_PAIRED
+	default 2
+
 config BT_MAX_CONN
 	default 2
 
@@ -136,9 +127,6 @@ if ZMK_SPLIT_BLE_ROLE_PERIPHERAL
 config ZMK_USB
 	default n
 
-config BT_ID_MAX
-	default 1
-
 config BT_MAX_PAIRED
 	default 1
 
@@ -150,6 +138,7 @@ config BT_GAP_AUTO_UPDATE_CONN_PARAMS
 
 endif
 
+
 endchoice
 
 endif
@@ -158,6 +147,17 @@ endif
 
 endmenu
 
+
+if ZMK_BLE && !ZMK_SPLIT_BLE
+
+config BT_ID_MAX
+	default 5
+
+# Used to update the name to include the identity used
+config BT_DEVICE_NAME_DYNAMIC
+	default y
+
+endif
 
 config ZMK_KSCAN_MOCK_DRIVER
 	bool "Enable mock kscan driver to simulate key presses"
