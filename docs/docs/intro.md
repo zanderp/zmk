@@ -24,7 +24,7 @@ ZMK is currently missing some features found in other popular firmware. This tab
 | [Basic Keycodes](behavior/key-press)                                                                                   | ✅  |    ✅     | ✅  |
 | [Basic consumer (Media) Keycodes](behavior/key-press#consumer-key-press)                                               | ✅  |    ✅     | ✅  |
 | [Encoders](feature/encoders)[^1]                                                                                       | ✅  |           | ✅  |
-| [OLED Display Support](feature/displays)[^2]                                                                           | 🚧  |    🚧     | ✅  |
+| [OLED Display Support](feature/displays)[^2]                                                                           | 🚧  |    🚧       | ✅  |
 | [RGB Underglow](feature/underglow)                                                                                     | ✅  |    ✅     | ✅  |
 | One Shot Keys                                                                                                          | 🚧  |    ✅     | ✅  |
 | Combo Keys                                                                                                             | 🚧  |           | ✅  |
