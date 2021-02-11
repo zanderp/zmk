@@ -25,8 +25,23 @@ static uint8_t _zmk_keymap_layer_default = 0;
 #define DT_DRV_COMPAT zmk_keymap
 
 #define LAYER_CHILD_LEN(node) 1 +
+
+#if DT_NODE_EXISTS(DT_CHOSEN(zmk_keymap))
+
+#define ZMK_KEYMAP_NODE DT_CHOSEN(zmk_keymap)
+
+#else
+
+#if DT_NODE_EXISTS(DT_DRV_INST(0))
+#warning "Selecting first keymap entry, since explicit chosen keymap not set"
 #define ZMK_KEYMAP_NODE DT_DRV_INST(0)
-#define ZMK_KEYMAP_LAYERS_LEN (DT_INST_FOREACH_CHILD(0, LAYER_CHILD_LEN) 0)
+#else
+#error "Unable to local chosen or first keymap DT node"
+#endif
+
+#endif
+
+#define ZMK_KEYMAP_LAYERS_LEN (DT_FOREACH_CHILD(ZMK_KEYMAP_NODE, LAYER_CHILD_LEN) 0)
 
 #define BINDING_WITH_COMMA(idx, drv_inst) ZMK_KEYMAP_EXTRACT_BINDING(idx, drv_inst),
 
@@ -61,16 +76,16 @@ static uint8_t _zmk_keymap_layer_default = 0;
 static uint32_t zmk_keymap_active_behavior_layer[ZMK_KEYMAP_LEN];
 
 static struct zmk_behavior_binding zmk_keymap[ZMK_KEYMAP_LAYERS_LEN][ZMK_KEYMAP_LEN] = {
-    DT_INST_FOREACH_CHILD(0, TRANSFORMED_LAYER)};
+    DT_FOREACH_CHILD(ZMK_KEYMAP_NODE, TRANSFORMED_LAYER)};
 
 static const char *zmk_keymap_layer_names[ZMK_KEYMAP_LAYERS_LEN] = {
-    DT_INST_FOREACH_CHILD(0, LAYER_LABEL)};
+    DT_FOREACH_CHILD(ZMK_KEYMAP_NODE, LAYER_LABEL)};
 
 #if ZMK_KEYMAP_HAS_SENSORS
 
-static struct zmk_behavior_binding zmk_sensor_keymap[ZMK_KEYMAP_LAYERS_LEN]
-                                                    [ZMK_KEYMAP_SENSORS_LEN] = {
-                                                        DT_INST_FOREACH_CHILD(0, SENSOR_LAYER)};
+static struct zmk_behavior_binding
+    zmk_sensor_keymap[ZMK_KEYMAP_LAYERS_LEN][ZMK_KEYMAP_SENSORS_LEN] = {
+        DT_FOREACH_CHILD(ZMK_KEYMAP_NODE, SENSOR_LAYER)};
 
 #endif /* ZMK_KEYMAP_HAS_SENSORS */
 
