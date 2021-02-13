@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          path: zmk
       - name: Cache west modules
         uses: actions/cache@v2
         env:
@@ -38,16 +40,16 @@ jobs:
         timeout-minutes: 2
         continue-on-error: true
       - name: Initialize workspace (west init)
-        run: west init -l app
+        run: west init -l zmk
       - name: Update modules (west update)
         run: west update
       - name: Export Zephyr CMake package (west zephyr-export)
         run: west zephyr-export
       - name: Test all
-        run: west test
+        run: cd zmk/ && west test
       - name: Archive artifacts
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
           name: "log-files"
-          path: app/build/**/*.log
+          path: zmk/build/**/*.log

@@ -4,19 +4,19 @@ on:
   push:
     paths:
       - ".github/workflows/clang-format-lint.yml"
-      - "app/boards/**/*.c"
-      - "app/include/**/*.h"
-      - "app/src/**"
-      - "app/drivers/**/*.c"
-      - "app/drivers/**/*.h"
+      - "boards/**/*.c"
+      - "include/**/*.h"
+      - "src/**"
+      - "drivers/**/*.c"
+      - "drivers/**/*.h"
   pull_request:
     paths:
       - ".github/workflows/clang-format-lint.yml"
-      - "app/boards/**/*.c"
-      - "app/include/**/*.h"
-      - "app/src/**"
-      - "app/drivers/**/*.c"
-      - "app/drivers/**/*.h"
+      - "boards/**/*.c"
+      - "include/**/*.h"
+      - "src/**"
+      - "drivers/**/*.c"
+      - "drivers/**/*.h"
 
 jobs:
   build:
@@ -25,5 +25,5 @@ jobs:
       - uses: actions/checkout@v2
       - uses: DoozyX/clang-format-lint-action@v0.11
         with:
-          source: "./app"
+          source: "."
           extensions: "h,c"
