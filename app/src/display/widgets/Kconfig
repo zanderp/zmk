@@ -27,4 +27,9 @@ config ZMK_WIDGET_WPM_STATUS
     select LVGL_USE_LABEL
     select ZMK_WPM
 
+config ZMK_WIDGET_LAST_HID_USAGE
+    bool "Widget for displaying last pressed HID usage (keycode)"
+    depends on !ZMK_SPLIT || ZMK_SPLIT_BLE_ROLE_CENTRAL
+    select LVGL_USE_LABEL
+
 endmenu
