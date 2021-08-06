@@ -78,6 +78,7 @@ config SPI
 	default y
 
 config IL0323
+	bool
 	default y
 
 #config DISPLAY_WOB
