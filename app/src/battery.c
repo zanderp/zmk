@@ -38,7 +38,7 @@ static int zmk_battery_update(const struct device *battery) {
                         avg_power, 
                         int_temp;
 
-    int rc;
+    int rc = 0;
     int status = 0;
     int rv = 0;
     
@@ -277,6 +277,9 @@ static void zmk_battery_timer(struct k_timer *timer) { k_work_submit(&battery_wo
 K_TIMER_DEFINE(battery_timer, zmk_battery_timer, NULL);
 
 static int zmk_battery_init(const struct device *_arg) {
+
+    LOG_DBG("--- initialization ---");
+
     battery = device_get_binding("BATTERY");
 
     if (battery == NULL) {
@@ -284,10 +287,12 @@ static int zmk_battery_init(const struct device *_arg) {
         return -ENODEV;
     }
 
+    LOG_DBG("--- Device labelled 'BATTERY' found! ---");
+
     int rc = zmk_battery_update(battery);
 
     if (rc != 0) {
-        LOG_WRN("Failed to update %d battery value(s) which the configured sensor supports.", rc);
+        LOG_ERR("Failed to update %d battery value(s) which the configured sensor supports.", rc);
         return rc;
     }
 

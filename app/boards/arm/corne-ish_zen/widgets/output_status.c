@@ -56,7 +56,7 @@ void set_status_symbol(lv_obj_t *icon) {
     bool active_profile_connected = zmk_ble_active_profile_is_connected();
     bool active_profie_bonded = !zmk_ble_active_profile_is_open();
     uint8_t active_profile_index = zmk_ble_active_profile_index();
-    char text[6] = {};
+    //char text[6] = {};
 
     switch (selected_endpoint) {
     case ZMK_ENDPOINT_USB:
