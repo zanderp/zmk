@@ -16,31 +16,20 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 static lv_style_t label_style;
-//static lv_style_t label_style2;
 
 static bool style_initialized = false;
-
-//LV_IMG_DECLARE(layers);
 
 void layer_status_init() {
     if (style_initialized) {
         return;
     }
-
     style_initialized = true;
     lv_style_init(&label_style);
     lv_style_set_text_color(&label_style, LV_STATE_DEFAULT, LV_COLOR_BLACK);
     lv_style_set_text_font(&label_style, LV_STATE_DEFAULT, &lv_font_montserrat_16);
     lv_style_set_text_letter_space(&label_style, LV_STATE_DEFAULT, 1);
     lv_style_set_text_line_space(&label_style, LV_STATE_DEFAULT, 1);
-    /*
-    lv_style_init(&label_style2);
-    lv_style_set_text_color(&label_style2, LV_STATE_DEFAULT, LV_COLOR_WHITE);
-    lv_style_set_text_font(&label_style2, LV_STATE_DEFAULT, &lv_font_montserrat_20);
-    lv_style_set_text_letter_space(&label_style2, LV_STATE_DEFAULT, 1);
-    lv_style_set_text_line_space(&label_style2, LV_STATE_DEFAULT, 1);
-    lv_style_set_bg_color(&label_style2, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-    */
+
 }
 
 void set_layer_symbol(lv_obj_t *label) {
@@ -53,30 +42,18 @@ void set_layer_symbol(lv_obj_t *label) {
         char text[6] = {};
 
         sprintf(text, " %i", active_layer_index);
-        //lv_img_set_src(icon, &layers);
 
         lv_label_set_text(label, text);
     } else {
-      
-        //lv_img_set_src(icon, &layers);
-        //lv_label_set_text(label, "LAYER\n");
         lv_label_set_text(label, layer_label);
     }
 }
 
 int zmk_widget_layer_status_init(struct zmk_widget_layer_status *widget, lv_obj_t *parent) {
     layer_status_init();
-    //widget->obj = lv_img_create(parent, NULL);
     widget->obj = lv_label_create(parent, NULL);
     lv_obj_add_style(widget->obj, LV_LABEL_PART_MAIN, &label_style);
-    //lv_obj_add_style(widget->obj2, LV_LABEL_PART_MAIN, &label_style);
-
-    //lv_obj_set_size(widget->obj2, 40, 15);
-    //lv_obj_align(widget->obj, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -1);
-    //lv_obj_align(widget->obj2, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -4);
-    //set_layer_symbol(widget->obj, widget->obj2);
     set_layer_symbol(widget->obj);
-
     sys_slist_append(&widgets, &widget->node); 
 
     return 0;
