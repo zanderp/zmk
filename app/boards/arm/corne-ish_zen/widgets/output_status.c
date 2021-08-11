@@ -68,7 +68,11 @@ void set_status_symbol(lv_obj_t *icon) {
                 //sprintf(text, LV_SYMBOL_BLUETOOTH "%i " LV_SYMBOL_OK, active_profile_index);
                 switch (active_profile_index) {
                 case 0:
+#if CONFIG_BOARD_CORNEISH_ZEN_RIGHT
+                    lv_img_set_src(icon, &bluetooth_connected_right);
+#else
                     lv_img_set_src(icon, &bluetooth_connected_1);
+#endif
                     break;
                 case 1:
                     lv_img_set_src(icon, &bluetooth_connected_2);

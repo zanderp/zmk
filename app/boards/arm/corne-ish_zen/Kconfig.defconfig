@@ -42,6 +42,10 @@ config BQ274XX
     bool "BQ274xx Fuel Gauge"
     depends on I2C && SENSOR
 
+config SENSOR_CAN_FETCH_ALL
+	bool "Can the fuel gauge fetch all channels at once"
+	default y
+
 config SPI
     bool
     default y
