@@ -33,6 +33,9 @@ lv_obj_t *zmk_display_status_screen() {
     lv_obj_t *screen;
     screen = lv_obj_create(NULL, NULL);
 
+    static lv_style_t layerstyle;
+    lv_style_init(&layerstyle);
+
 #if IS_ENABLED(CONFIG_CUSTOM_WIDGET_BATTERY_STATUS)
     zmk_widget_battery_status_init(&battery_status_widget, screen);
     lv_obj_align(zmk_widget_battery_status_obj(&battery_status_widget), NULL, LV_ALIGN_IN_TOP_MID,
@@ -46,9 +49,10 @@ lv_obj_t *zmk_display_status_screen() {
 #endif
 
 #if IS_ENABLED(CONFIG_CUSTOM_WIDGET_LAYER_STATUS)
+    lv_style_set_pad_inner(&layerstyle, LV_STATE_DEFAULT, 12);
     zmk_widget_layer_status_init(&layer_status_widget, screen);
     lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), NULL, LV_ALIGN_IN_BOTTOM_MID, 0,
-                 -12);
+                 0);
 #endif
 
 #if CONFIG_BOARD_CORNEISH_ZEN_RIGHT
