@@ -11,7 +11,7 @@ manifest:
   projects:
     - name: zephyr
       remote: petejohanson
-      revision: v2.7.0+zmk-fixes
+      revision: main+zmk+rp2040
       clone-depth: 1
       import:
         # TODO: Rename once upstream offers option like `exclude` or `denylist`
