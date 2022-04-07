@@ -164,13 +164,13 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* LOGICAL_MAXIMUM (0xFFFF) */
     HID_GI_LOGICAL_MAX(2),
     0xFF,
-    0xFF,
+    0x0F,
     HID_LI_USAGE_MIN(1),
     0x00,
     /* USAGE_MAXIMUM (0xFFFF) */
     HID_LI_USAGE_MAX(2),
     0xFF,
-    0xFF,
+    0x0F,
     /* INPUT (Data,Ary,Abs) */
     /* REPORT_SIZE (16) */
     HID_GI_REPORT_SIZE,
