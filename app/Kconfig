@@ -108,14 +108,16 @@ endif
 
 menuconfig ZMK_BLE
     bool "BLE (HID over GATT)"
+    select SMF
+    select SMF_ANCESTOR_SUPPORT
     select BT
     select BT_SMP
     select BT_SMP_SC_PAIR_ONLY
     select BT_SMP_APP_PAIRING_ACCEPT
     select BT_PERIPHERAL
     select BT_DIS
-    select BT_SETTINGS
-    select SETTINGS
+    imply BT_SETTINGS
+    imply SETTINGS
     imply ZMK_BATTERY_REPORTING
 
 if ZMK_BLE
@@ -126,6 +128,24 @@ config BT_TINYCRYPT_ECC
 
 choice BT_LL_SW_LLCP_IMPL
     default BT_LL_SW_LLCP_LEGACY
+
+endchoice
+
+choice ZMK_BLE_PROFILE_MODE
+    prompt "Profile Mode"
+
+config ZMK_BLE_PROFILE_MODE_EXPLICIT
+    bool "Explicit"
+    help
+        Explicit profile management of profiles, selecting which profile is active, etc.
+
+config ZMK_BLE_PROFILE_MODE_AUTOMATIC
+    bool "Automatic"
+    select BT_KEYS_OVERWRITE_OLDEST
+    select BT_SMP_ALLOW_UNAUTH_OVERWRITE
+    help
+        Automatic profile management of profiles, the active profile is selected whenever
+        a host connects.
 
 endchoice
 
@@ -167,6 +187,16 @@ config ZMK_BLE_PASSKEY_ENTRY
     bool "Require passkey entry on the keyboard to complete pairing"
     default n
     select RING_BUFFER
+
+config ZMK_BLE_DIRECTED_ADVERTISING
+    bool "Experimental: Enable directed advertising to hosts"
+    default n
+    select BT_GATT_CLIENT
+
+config ZMK_BLE_PROFILE_AUTO_DISCONNECT
+    bool "Experimental: Disconnect connected centrals for non-selected profiles"
+    default n
+    depends on ZMK_BLE_DIRECTED_ADVERTISING
 
 config BT_PERIPHERAL_PREF_MIN_INT
     default 6
