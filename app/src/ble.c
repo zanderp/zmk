@@ -391,6 +391,7 @@ static void connected(struct bt_conn *conn, uint8_t err) {
 
     if (is_conn_active_profile(conn)) {
         LOG_DBG("Active profile connected");
+        &profiles[active_profile].status = ZMK_BLE_PROFILE_STATUS_CONNECTED;
         k_work_submit(&raise_profile_changed_event_work);
     }
 }
@@ -410,6 +411,13 @@ static void disconnected(struct bt_conn *conn, uint8_t reason) {
         return;
     }
 
+    for (int i = 0; i < ZMK_BLE_PROFILE_COUNT; i++) {
+
+        if (!bt_addr_le_cmp(&profiles[i].peer, bt_conn_get_dst(conn)) {
+            &profiles[i].status = ZMK_BLE_PROFILE_STATUS_DISCONNECTED;
+
+        }
+    }
     // We need to do this in a work callback, otherwise the advertising update will still see the
     // connection for a profile as active, and not start advertising yet.
     k_work_submit(&update_advertising_work);
