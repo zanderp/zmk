@@ -90,7 +90,7 @@ static void zmk_battery_start_reporting() {
     k_timer_start(&battery_timer, K_NO_WAIT, K_SECONDS(CONFIG_ZMK_BATTERY_REPORT_INTERVAL));
 }
 
-static int zmk_battery_init(const struct device *_arg) {
+static int zmk_battery_init(void) {
 #if !DT_HAS_CHOSEN(zmk_battery)
     battery = device_get_binding("BATTERY");
 
