@@ -81,7 +81,7 @@ static void zmk_battery_timer(struct k_timer *timer) { k_work_submit(&battery_wo
 
 K_TIMER_DEFINE(battery_timer, zmk_battery_timer, NULL);
 
-static int zmk_battery_init(const struct device *_arg) {
+static int zmk_battery_init(void) {
 #if !DT_HAS_CHOSEN(zmk_battery)
     battery = device_get_binding("BATTERY");
 
