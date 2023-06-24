@@ -1,0 +1,105 @@
+# Copyright (c) 2023 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+menuconfig ZMK_BLE
+    bool "BLE (HID over GATT)"
+    select SMF
+    select SMF_ANCESTOR_SUPPORT
+    select BT
+    select BT_SMP
+    select BT_SMP_SC_PAIR_ONLY
+    select BT_SMP_APP_PAIRING_ACCEPT
+    select BT_PERIPHERAL
+    select BT_DIS
+    imply BT_SETTINGS if !ARCH_POSIX
+    imply SETTINGS if !ARCH_POSIX
+    imply ZMK_BATTERY_REPORTING
+
+if ZMK_BLE
+
+# BT_TINYCRYPT_ECC is required for BT_SMP_SC_PAIR_ONLY when using HCI
+config BT_TINYCRYPT_ECC
+    default y if BT_HCI && !BT_CTLR
+
+choice ZMK_BLE_PROFILE_MODE
+    prompt "Profile Mode"
+
+config ZMK_BLE_PROFILE_MODE_EXPLICIT
+    bool "Explicit"
+    help
+        Explicit profile management of profiles, selecting which profile is active, etc.
+
+config ZMK_BLE_PROFILE_MODE_AUTOMATIC
+    bool "Automatic"
+    select BT_KEYS_OVERWRITE_OLDEST
+    select BT_SMP_ALLOW_UNAUTH_OVERWRITE
+    help
+        Automatic profile management of profiles, the active profile is selected whenever
+        a host connects.
+
+endchoice
+
+
+
+config SYSTEM_WORKQUEUE_STACK_SIZE
+    default 4096 if SOC_RP2040
+    default 2048
+
+config ZMK_BLE_THREAD_STACK_SIZE
+    int "BLE notify thread stack size"
+    default 768
+
+config ZMK_BLE_THREAD_PRIORITY
+    int "BLE notify thread priority"
+    default 5
+
+config ZMK_BLE_KEYBOARD_REPORT_QUEUE_SIZE
+    int "Max number of keyboard HID reports to queue for sending over BLE"
+    default 20
+
+config ZMK_BLE_CONSUMER_REPORT_QUEUE_SIZE
+    int "Max number of consumer HID reports to queue for sending over BLE"
+    default 5
+
+config ZMK_BLE_CLEAR_BONDS_ON_START
+    bool "Configuration that clears all bond information from the keyboard on startup."
+    default n
+
+# HID GATT notifications sent this way are *not* picked up by Linux, and possibly others.
+config BT_GATT_NOTIFY_MULTIPLE
+    default n
+
+config BT_GATT_AUTO_SEC_REQ
+    default n
+
+config BT_DEVICE_APPEARANCE
+    default 961
+
+config ZMK_BLE_PASSKEY_ENTRY
+    bool "Require passkey entry on the keyboard to complete pairing"
+    default n
+    select RING_BUFFER
+
+config ZMK_BLE_DIRECTED_ADVERTISING
+    bool "Experimental: Enable directed advertising to hosts"
+    default n
+    select BT_GATT_CLIENT
+
+config ZMK_BLE_PROFILE_AUTO_DISCONNECT
+    bool "Experimental: Disconnect connected centrals for non-selected profiles"
+    default n
+    depends on ZMK_BLE_DIRECTED_ADVERTISING
+
+config BT_PERIPHERAL_PREF_MIN_INT
+    default 6
+
+config BT_PERIPHERAL_PREF_MAX_INT
+    default 12
+
+config BT_PERIPHERAL_PREF_LATENCY
+    default 30
+
+config BT_PERIPHERAL_PREF_TIMEOUT
+    default 400
+
+endif
