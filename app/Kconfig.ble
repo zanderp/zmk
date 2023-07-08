@@ -17,6 +17,10 @@ menuconfig ZMK_BLE
 
 if ZMK_BLE
 
+module = ZMK_BLE
+module-str = zmk_ble
+source "subsys/logging/Kconfig.template.log_config"
+
 # BT_TINYCRYPT_ECC is required for BT_SMP_SC_PAIR_ONLY when using HCI
 config BT_TINYCRYPT_ECC
     default y if BT_HCI && !BT_CTLR

@@ -30,7 +30,7 @@
 
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+LOG_MODULE_REGISTER(zmk_ble, CONFIG_ZMK_BLE_LOG_LEVEL);
 
 #include <zmk/ble.h>
 #include <zmk/keys.h>
@@ -218,6 +218,18 @@ int zmk_ble_clear_bonds() {
     // TODO: Fire event into the system?
     return 0;
 };
+
+static int is_conn_non_active_profile(struct bt_conn *conn) {
+    const struct bt_addr_le_t *addr = bt_conn_get_dst(conn);
+
+    for (int i = 0; i < ZMK_BLE_PROFILE_COUNT; i++) {
+        if (bt_addr_le_eq(addr, &profiles[i].peer)) {
+            return i != active_profile;
+        }
+    }
+
+    return false;
+}
 
 int zmk_ble_active_profile_index() { return active_profile; }
 
@@ -713,17 +725,20 @@ void adv_pairing_run(void *obj) {
         const bt_addr_le_t *addr = &state->event->payload.central_connected.addr;
         struct bt_conn *conn = bt_conn_lookup_addr_le(BT_ID_DEFAULT, addr);
 
-        if (bt_conn_set_security(conn, BT_SECURITY_L2) < 0) {
-            LOG_ERR("Failed to set security");
+        if (is_conn_active_profile(conn) ||
+            (zmk_ble_active_profile_is_open() && !is_conn_non_active_profile(conn))) {
+            if (bt_conn_set_security(conn, BT_SECURITY_L2) < 0) {
+                LOG_ERR("Failed to set security");
+            }
+
+            smf_set_state(SMF_CTX(&state_obj), &ble_states[ZMK_BLE_CONN_MODE_SECURING_SET_L2]);
+        } else {
+            // TODO: Disconnect the connection if Kconfig setting for disconnect non-active profiles
+            // is set
+            smf_set_state(SMF_CTX(&state_obj), &ble_states[ZMK_BLE_CONN_MODE_ADV]);
         }
 
         bt_conn_unref(conn);
-        smf_set_state(SMF_CTX(&state_obj), &ble_states[ZMK_BLE_CONN_MODE_SECURING_SET_L2]);
-
-        // if (is_le_addr_in_existing_profile(addr)) {
-
-        // } else {
-        // }
 
         //             if (is_conn_active_profile(conn)) {
         //                 raise_profile_changed_event();
@@ -732,8 +747,6 @@ void adv_pairing_run(void *obj) {
         //                 LOG_ERR("Failed to auto select profile for new connection");
         // #endif
         //             }
-
-        // smf_set_state(SMF_CTX(&state_obj), &ble_states[ZMK_BLE_CONN_MODE_CONNECTED]);
 
         break;
     case BSE_CENTRAL_CONNECTED_ERR:

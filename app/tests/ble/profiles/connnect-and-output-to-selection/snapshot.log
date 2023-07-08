@@ -1,0 +1,26 @@
+[1;33m<wrn> bt_id: No static addresses stored in controller[0m
+[0m<dbg> ble_central: _posix_zephyr_main: Bluetooth initialized[0m
+[0m<dbg> ble_central: start_scan: Scanning successfully started[0m
+[0m<dbg> ble_central: device_found: [DEVICE]: FD:9E:B2:48:47:39 (random), AD evt type 0, AD data len 15, RSSI -59[0m
+[0m<dbg> ble_central: eir_found: [AD]: 9 data_len 0[0m
+[0m<dbg> ble_central: eir_found: [AD]: 25 data_len 2[0m
+[0m<dbg> ble_central: eir_found: [AD]: 1 data_len 1[0m
+[0m<dbg> ble_central: eir_found: [AD]: 2 data_len 4[0m
+[0m<dbg> ble_central: connected: Connected: FD:9E:B2:48:47:39 (random)[0m
+[0m<dbg> ble_central: connected: Setting the security for the connection[0m
+[0m<dbg> ble_central: pairing_complete: Pairing complete[0m
+[0m<dbg> ble_central: discover_conn: Discovery started for conn[0m
+[0m<dbg> ble_central: discover_func: [ATTRIBUTE] handle 27[0m
+[0m<dbg> ble_central: discover_func: [ATTRIBUTE] handle 32[0m
+[0m<dbg> ble_central: discover_func: [ATTRIBUTE] handle 34[0m
+[0m<dbg> ble_central: discover_func: [SUBSCRIBED][0m
+[0m<dbg> ble_central: notify_func: payload
+                   00 00 04 00 00 00 00 00                          |........         [0m
+[0m<dbg> ble_central: notify_func: payload
+                   00 00 00 00 00 00 00 00                          |........         [0m
+[0m<dbg> ble_central: notify_func: payload
+                   00 00 05 00 00 00 00 00                          |........         [0m
+[0m<dbg> ble_central: notify_func: payload
+                   00 00 00 00 00 00 00 00                          |........         [0m
+[0m<dbg> ble_central: notify_func: payload
+                   00 00 00 00 00 00 00 00                          |........         [0m

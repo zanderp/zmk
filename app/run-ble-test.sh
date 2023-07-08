@@ -42,23 +42,32 @@ exe_name=${testcase//\//_}
 start_dir=$(pwd)
 cp build/$testcase/zephyr/zmk.exe "${BSIM_OUT_PATH}/bin/${exe_name}"
 pushd "${BSIM_OUT_PATH}/bin"
-./ble_test_central.exe -d=0 -s=${exe_name} | tee -a "${start_dir}/build/$testcase/output.log" &
-./${exe_name} -d=1 -s=${exe_name} | tee -a "${start_dir}/build/$testcase/output.log" &
-./bs_device_handbrake -s=${exe_name} -d=2 -r=10 &
-./bs_2G4_phy_v1 -s=${exe_name} -D=3 -sim_length=50e6
+rm "${start_dir}/build/$testcase/output.log"
+central_counts=`wc -l ${start_dir}/${testcase}/centrals.txt | cut -d' ' -f1`
+./${exe_name} -d=0 -s=${exe_name} | tee -a "${start_dir}/build/$testcase/output.log" &
+./bs_device_handbrake -s=${exe_name} -d=1 -r=10 &
+
+cat ${start_dir}/${testcase}/centrals.txt |
+while IFS= read line
+do
+  ./ble_test_central.exe ${line} -s=${exe_name} | tee -a "${start_dir}/build/$testcase/output.log" &
+done
+
+./bs_2G4_phy_v1 -s=${exe_name} -D=`expr 2 + $central_counts` -sim_length=50e6
 
 popd
 
-# ./build/$testcase/zephyr/zmk.exe | sed -e "s/.*> //" | tee build/$testcase/keycode_events_full.log | sed -n -f $testcase/events.patterns > build/$testcase/keycode_events.log
-# diff -auZ $testcase/keycode_events.snapshot build/$testcase/keycode_events.log
-# if [ $? -gt 0 ]; then
-#     if [ -f $testcase/pending ]; then
-#         echo "PENDING: $testcase" | tee -a ./build/tests/pass-fail.log
-#         exit 0
-#     fi
-#     echo "FAILED: $testcase" | tee -a ./build/tests/pass-fail.log
-#     exit 1
-# fi
+cat build/$testcase/output.log | sed -E -n -f $testcase/events.patterns > build/$testcase/filtered_output.log
 
-# echo "PASS: $testcase" | tee -a ./build/tests/pass-fail.log
-# exit 0
+diff -auZ $testcase/snapshot.log build/$testcase/filtered_output.log
+if [ $? -gt 0 ]; then
+    if [ -f $testcase/pending ]; then
+        echo "PENDING: $testcase" | tee -a ./build/tests/pass-fail.log
+        exit 0
+    fi
+    echo "FAILED: $testcase" | tee -a ./build/tests/pass-fail.log
+    exit 1
+fi
+
+echo "PASS: $testcase" | tee -a ./build/tests/pass-fail.log
+exit 0
