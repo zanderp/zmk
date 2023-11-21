@@ -4,6 +4,8 @@
 config ZMK_MOUSE
     bool "Enable ZMK mouse emulation"
     default n
+    select INPUT
+    select INPUT_THREAD_PRIORITY_OVERRIDE
 
 config ZMK_MOUSE_TICK_DURATION
     int "Mouse tick duration in ms"
