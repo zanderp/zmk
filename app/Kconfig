@@ -169,11 +169,6 @@ config ZMK_BLE_PASSKEY_ENTRY
     default n
     select RING_BUFFER
 
-choice BT_LL_SW_LLCP_IMPL
-    default BT_LL_SW_LLCP_LEGACY if !ZMK_BLE_EXPERIMENTAL_FEATURES
-
-endchoice
-
 config BT_CTLR_PHY_2M
     default n if ZMK_BLE_EXPERIMENTAL_FEATURES
 
