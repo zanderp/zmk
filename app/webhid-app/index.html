@@ -1,0 +1,16 @@
+<head>
+  <title>WebHID Example</title>
+</head>
+<body>
+  <script src="index.js"></script>
+  <button onclick="hidTest()">Connect</button>
+  <input
+    id="range"
+    type="range"
+    oninput="handleRangeUpdate(this.value)"
+    value="0"
+    min="0"
+    max="15"
+  />
+  <button onclick="saveValue()">Save</button>
+</body>
