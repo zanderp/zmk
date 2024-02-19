@@ -1,0 +1,51 @@
+; Requests
+
+request = core_subsystem / keymap_subsystem / behavior_subsystem
+
+core_subsystem = [0, core_request]
+keymap_subsystem = [1, keymap_request]
+behavior_subsystem = [2, behavior_request]
+
+core_request = get_lock_state / unlock_request / lock_request
+
+get_lock_state = [0]
+unlock_request = [1]
+lock_request = [2]
+
+keymap_request = get_layers_summary
+
+get_layers_summary = [0]
+
+behavior_request =
+    list_all_behaviors /
+    get_behavior_details
+
+list_all_behaviors = [0]
+get_behavior_details = [1, get_behavior_details_payload]
+
+get_behavior_details_payload = [behavior_id: uint]
+
+; Responses
+
+response = notification / request_response
+
+notification = [0, notification_payload]
+request_response = [1, response_payload]
+
+notification_payload = nil
+
+response_payload = core_response / keymap_response / behavior_response
+
+core_response = [0, get_lock_state_response / unlock_response / lock_response]
+keymap_response = [1, get_layers_summary_response]
+behavior_response = [2, list_all_behaviors_response]
+
+get_lock_state_response = [0, locked: bool]
+unlock_response = [1]
+lock_response = [2]
+
+get_layers_summary_response = [ 0, keymap_layer_summary ]
+list_all_behaviors_response = [ 1, behavior_summary ]
+
+keymap_layer_summary = [ name: tstr, enabled: bool ]
+behavior_summary = [ name: tstr ]

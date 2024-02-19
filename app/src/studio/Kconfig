@@ -1,0 +1,21 @@
+
+menuconfig ZMK_STUDIO
+    bool "Studio Support"
+    help
+      Add firmware support for realtime keymap updates (ZMK Studio
+
+if ZMK_STUDIO
+
+menu "Interfaces"
+
+config ZMK_STUDIO_INTERFACE_UART
+    bool "Serial"
+    default y if ZMK_USB
+
+config ZMK_STUDIO_INTERFACE_BLE
+    bool "BLE (GATT)"
+    default ZMK_BLE
+
+endmenu
+
+endif

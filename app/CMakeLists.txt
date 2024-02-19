@@ -15,6 +15,11 @@ endif()
 zephyr_linker_sources(SECTIONS include/linker/zmk-behaviors.ld)
 zephyr_linker_sources(RODATA include/linker/zmk-events.ld)
 
+if(CONFIG_ZMK_STUDIO)
+  zephyr_linker_sources(DATA_SECTIONS include/linker/zmk-rpc-subsystems.ld)
+  zephyr_linker_sources(SECTIONS include/linker/zmk-rpc-subsystem-handlers.ld)
+endif()
+
 zephyr_syscall_header(${APPLICATION_SOURCE_DIR}/include/drivers/behavior.h)
 zephyr_syscall_header(${APPLICATION_SOURCE_DIR}/include/drivers/ext_power.h)
 
@@ -33,6 +38,7 @@ target_sources_ifdef(CONFIG_ZMK_EXT_POWER app PRIVATE src/ext_power_generic.c)
 target_sources(app PRIVATE src/events/activity_state_changed.c)
 target_sources(app PRIVATE src/events/position_state_changed.c)
 target_sources(app PRIVATE src/events/sensor_event.c)
+
 target_sources(app PRIVATE src/events/mouse_button_state_changed.c)
 target_sources_ifdef(CONFIG_ZMK_WPM app PRIVATE src/events/wpm_state_changed.c)
 target_sources_ifdef(CONFIG_USB_DEVICE_STACK app PRIVATE src/events/usb_conn_state_changed.c)
@@ -100,5 +106,10 @@ target_sources_ifdef(CONFIG_ZMK_LOW_PRIORITY_WORK_QUEUE app PRIVATE src/workqueu
 target_sources(app PRIVATE src/main.c)
 
 add_subdirectory(src/display/)
+
+add_subdirectory(proto/)
+if(CONFIG_ZMK_STUDIO)
+  add_subdirectory(src/studio)
+endif()
 
 zephyr_cc_option(-Wfatal-errors)
