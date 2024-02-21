@@ -32,7 +32,7 @@ response = notification / request_response
 notification = [0, notification_payload]
 request_response = [1, response_payload]
 
-notification_payload = nil
+notification_payload = uint
 
 response_payload = core_response / keymap_response / behavior_response
 
