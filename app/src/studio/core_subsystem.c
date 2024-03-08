@@ -1,13 +1,16 @@
 
+#include <zephyr/logging/log.h>
+LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+
 #include <zmk/studio/rpc.h>
 
 ZMK_RPC_SUBSYSTEM(core)
 
 #define CORE_RESPONSE(type, ...) ZMK_RPC_RESPONSE(core, type, __VA_ARGS__)
 
-struct response_r get_lock_status(const struct request_r *req) {
+struct response_r get_lock_status(const struct request *req) {
     return CORE_RESPONSE(get_lock_state_response, {
-                                                      .locked = true,
+                                                      .locked = false,
                                                   });
 }
 

@@ -16,3 +16,5 @@ enum studio_framing_state {
 
 int studio_framing_recv_byte(struct net_buf_simple *buf, enum studio_framing_state *frame_state,
                              uint8_t data);
+
+int studio_framing_encode_frame(const uint8_t *buf, size_t len, uint8_t *dest, size_t dest_size);

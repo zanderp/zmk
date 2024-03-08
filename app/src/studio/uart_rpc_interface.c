@@ -31,12 +31,12 @@ static const struct device *const uart_dev = DEVICE_DT_GET(UART_DEVICE_NODE);
 NET_BUF_SIMPLE_DEFINE_STATIC(rx_buf, MSG_SIZE);
 
 /* queue to store up to 10 messages (aligned to 4-byte boundary) */
-K_MSGQ_DEFINE(req_msgq, sizeof(struct request_r), 10, 4);
+K_MSGQ_DEFINE(req_msgq, sizeof(struct request), 10, 4);
 
 static enum studio_framing_state rpc_framing_state;
 
 void rpc_cb(struct k_work *work) {
-    struct request_r req;
+    struct request req;
     while (k_msgq_get(&req_msgq, &req, K_NO_WAIT) >= 0) {
         struct response_r resp = zmk_rpc_handle_request(&req);
 
@@ -87,15 +87,12 @@ static void serial_cb(const struct device *dev, void *user_data) {
         LOG_DBG("GOT %d", c);
 
         if (rpc_framing_state == FRAMING_STATE_IDLE && rx_buf.len > 0) {
-            struct request_r req;
+            struct request req;
             size_t req_decoded;
             cbor_decode_request(rx_buf.data, rx_buf.len, &req, &req_decoded);
             if (req_decoded == rx_buf.len) {
                 k_msgq_put(&req_msgq, &req, K_MSEC(1));
                 k_work_submit(&rpc_work);
-                // struct response_r resp = zmk_rpc_handle_request(&req);
-                // k_msgq_put(&uart_msgq, &resp, K_MSEC(1));
-                // k_work_submit(&sender_work);
             }
             net_buf_simple_reset(&rx_buf);
         }

@@ -1,6 +1,6 @@
 ; Requests
 
-request = core_subsystem / keymap_subsystem / behavior_subsystem
+request = [request_id: uint, core_subsystem / keymap_subsystem / behavior_subsystem]
 
 core_subsystem = [0, core_request]
 keymap_subsystem = [1, keymap_request]
@@ -30,7 +30,7 @@ get_behavior_details_payload = [behavior_id: uint]
 response = notification / request_response
 
 notification = [0, notification_payload]
-request_response = [1, response_payload]
+request_response = [1, request_id: uint, response_payload]
 
 notification_payload = uint
 
@@ -38,14 +38,17 @@ response_payload = core_response / keymap_response / behavior_response
 
 core_response = [0, get_lock_state_response / unlock_response / lock_response]
 keymap_response = [1, get_layers_summary_response]
-behavior_response = [2, list_all_behaviors_response]
+behavior_response = [2, list_all_behaviors_response / get_behavior_details_response]
 
 get_lock_state_response = [0, locked: bool]
 unlock_response = [1]
 lock_response = [2]
 
 get_layers_summary_response = [ 0, keymap_layer_summary ]
-list_all_behaviors_response = [ 1, behavior_summary ]
+list_all_behaviors_response = [ 0, behaviors: [ 1*20 behavior_summary ] ]
+get_behavior_details_response = [ 1, behavior_detail ]
 
 keymap_layer_summary = [ name: tstr, enabled: bool ]
-behavior_summary = [ name: tstr ]
+behavior_summary = [ id: uint ]
+
+behavior_detail = [ id: uint, friendly_name: tstr ]

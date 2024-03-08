@@ -62,3 +62,27 @@ int studio_framing_recv_byte(struct net_buf_simple *buf,
 
     return 0;
 }
+
+int studio_framing_encode_frame(const uint8_t *buf, size_t len, uint8_t *dest, size_t dest_size) {
+    int added = 0;
+
+    dest[added++] = FRAMING_SOF;
+    for (int i = 0; i < len && added < dest_size; i++) {
+        switch (buf[i]) {
+        case FRAMING_SOF:
+        case FRAMING_ESC:
+        case FRAMING_EOF:
+            dest[added++] = FRAMING_ESC;
+            if (added == dest_size) {
+                return -EIO;
+            }
+            // Flow to default to add the actual byte
+        default:
+            dest[added++] = buf[i];
+        }
+    }
+
+    dest[added++] = FRAMING_EOF;
+
+    return added;
+}

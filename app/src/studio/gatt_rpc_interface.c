@@ -54,6 +54,8 @@ static ssize_t read_rpc_resp(struct bt_conn *conn, const struct bt_gatt_attr *at
     // return bt_gatt_attr_read(conn, attr, buf, len, offset, &level, sizeof(uint8_t));
 }
 
+static void send_response(struct bt_conn *conn, const struct response_r *response);
+
 static ssize_t write_rpc_req(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf,
                              uint16_t len, uint16_t offset, uint8_t flags) {
     LOG_HEXDUMP_DBG(buf, len, "Write RPC payload");
@@ -63,14 +65,14 @@ static ssize_t write_rpc_req(struct bt_conn *conn, const struct bt_gatt_attr *at
 
         if (rpc_framing_state == FRAMING_STATE_IDLE && rx_buf.len > 0) {
             LOG_DBG("Got a full message");
-            struct request_r req;
+            struct request req;
             size_t req_decoded;
             cbor_decode_request(rx_buf.data, rx_buf.len, &req, &req_decoded);
 
             if (req_decoded == rx_buf.len) {
                 struct response_r resp = zmk_rpc_handle_request(&req);
-                // k_msgq_put(&notify_msgq, &resp, K_MSEC(1));
-                // k_work_submit(&notify_work);
+
+                send_response(conn, &resp);
             }
 
             net_buf_simple_reset(&rx_buf);
@@ -87,3 +89,31 @@ BT_GATT_SERVICE_DEFINE(
                            BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT, read_rpc_resp,
                            write_rpc_req, NULL),
     BT_GATT_CCC(rpc_ccc_cfg_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT));
+
+static void send_response(struct bt_conn *conn, const struct response_r *response) {
+    uint8_t resp_data[128];
+    size_t out_size = sizeof(resp_data);
+
+    cbor_encode_response(resp_data, sizeof(resp_data), response, &out_size);
+
+    uint8_t resp_frame[128];
+
+    int frame_encoded_size =
+        studio_framing_encode_frame(resp_data, out_size, resp_frame, sizeof(resp_frame));
+
+    if (frame_encoded_size < 0) {
+        LOG_WRN("Failed to encode frame %d", frame_encoded_size);
+        return;
+    }
+
+    struct bt_gatt_notify_params notify_params = {
+        .attr = &rpc_interface.attrs[1],
+        .data = &resp_frame,
+        .len = frame_encoded_size,
+    };
+
+    int err = bt_gatt_notify_cb(conn, &notify_params);
+    if (err < 0) {
+        LOG_WRN("Failed to notify the response %d", err);
+    }
+}
