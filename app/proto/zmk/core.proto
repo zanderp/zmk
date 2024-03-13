@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package zmk.core;
+
+message request {
+    oneof request_type {
+        bool get_lock_status = 1;
+        bool unlock_request = 2;
+        bool lock_request = 3;
+    }
+}
+
+message get_lock_status_response {
+    bool locked = 1;
+}
+
+message response {
+    oneof response_type {
+        get_lock_status_response get_lock_status = 1;
+    }
+}

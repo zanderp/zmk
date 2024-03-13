@@ -1,6 +1,7 @@
 
 menuconfig ZMK_STUDIO
     bool "Studio Support"
+    select NANOPB
     help
       Add firmware support for realtime keymap updates (ZMK Studio
 
@@ -10,11 +11,15 @@ menu "Interfaces"
 
 config ZMK_STUDIO_INTERFACE_UART
     bool "Serial"
+    select SERIAL
+    select NET_BUF
     default y if ZMK_USB
 
 config ZMK_STUDIO_INTERFACE_BLE
     bool "BLE (GATT)"
-    default ZMK_BLE
+    select NET_BUF
+    depends on ZMK_BLE
+    default y
 
 endmenu
 

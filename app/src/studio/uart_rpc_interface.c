@@ -14,8 +14,13 @@
 
 #include "common.h"
 
-#include <studio-msgs_decode.h>
-#include <studio-msgs_encode.h>
+// #include <studio-msgs_decode.h>
+// #include <studio-msgs_encode.h>
+
+#include <pb_encode.h>
+#include <pb_decode.h>
+
+#include <proto/zmk/studio-msgs.pb.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -31,19 +36,23 @@ static const struct device *const uart_dev = DEVICE_DT_GET(UART_DEVICE_NODE);
 NET_BUF_SIMPLE_DEFINE_STATIC(rx_buf, MSG_SIZE);
 
 /* queue to store up to 10 messages (aligned to 4-byte boundary) */
-K_MSGQ_DEFINE(req_msgq, sizeof(struct request), 10, 4);
+K_MSGQ_DEFINE(req_msgq, sizeof(zmk_Request), 10, 4);
 
 static enum studio_framing_state rpc_framing_state;
 
 void rpc_cb(struct k_work *work) {
-    struct request req;
+    zmk_Request req;
     while (k_msgq_get(&req_msgq, &req, K_NO_WAIT) >= 0) {
-        struct response_r resp = zmk_rpc_handle_request(&req);
+        zmk_Response resp = zmk_rpc_handle_request(&req);
 
         uint8_t payload[32];
-        size_t how_much;
 
-        cbor_encode_response(payload, ARRAY_SIZE(payload), &resp, &how_much);
+        pb_ostream_t stream = pb_ostream_from_buffer(payload, ARRAY_SIZE(payload));
+
+        /* Now we are ready to encode the message! */
+        bool status = pb_encode(&stream, &zmk_Response_msg, &resp);
+
+        size_t how_much = stream.bytes_written;
 
         LOG_HEXDUMP_DBG(payload, how_much, "Encoded payload");
 
@@ -87,13 +96,18 @@ static void serial_cb(const struct device *dev, void *user_data) {
         LOG_DBG("GOT %d", c);
 
         if (rpc_framing_state == FRAMING_STATE_IDLE && rx_buf.len > 0) {
-            struct request req;
-            size_t req_decoded;
-            cbor_decode_request(rx_buf.data, rx_buf.len, &req, &req_decoded);
-            if (req_decoded == rx_buf.len) {
+            zmk_Request req = zmk_Request_init_zero;
+
+            pb_istream_t stream = pb_istream_from_buffer(rx_buf.data, rx_buf.len);
+
+            bool status = pb_decode(&stream, &zmk_Request_msg, &req);
+
+            if (status) {
                 k_msgq_put(&req_msgq, &req, K_MSEC(1));
                 k_work_submit(&rpc_work);
             }
+
+            // TODO: Just clear the bits that stream read!
             net_buf_simple_reset(&rx_buf);
         }
     }

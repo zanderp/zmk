@@ -107,8 +107,19 @@ target_sources(app PRIVATE src/main.c)
 
 add_subdirectory(src/display/)
 
-add_subdirectory(proto/)
-if(CONFIG_ZMK_STUDIO)
+if (CONFIG_ZMK_STUDIO)
+  # For some reason this is failing if run from a different sub-file.
+  list(APPEND CMAKE_MODULE_PATH ${ZEPHYR_BASE}/modules/nanopb)
+
+  include(nanopb)
+
+  zephyr_nanopb_sources(app
+                        proto/zmk/studio.proto
+                        proto/zmk/core.proto
+                        proto/zmk/behaviors.proto
+                        proto/zmk/keymap.proto
+                        )
+
   add_subdirectory(src/studio)
 endif()
 

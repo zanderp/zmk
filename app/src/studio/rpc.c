@@ -7,13 +7,13 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include <zmk/studio/rpc.h>
 
-struct response_r zmk_rpc_handle_request(const struct request *req) {
-    LOG_WRN("Got a req of union type: %d", req->union_choice);
+zmk_Response zmk_rpc_handle_request(const zmk_Request *req) {
+    LOG_WRN("Got a req of union type: %d", req->which_subsystem);
     STRUCT_SECTION_FOREACH(zmk_rpc_subsystem, sub) {
-        if (sub->subsystem_choice == req->union_choice) {
+        if (sub->subsystem_choice == req->which_subsystem) {
             LOG_WRN("Found a func!");
-            struct response_r resp = sub->func(sub, req);
-            resp.request_response_m.request_id = req->request_id;
+            zmk_Response resp = sub->func(sub, req);
+            resp.type.request_response.request_id = req->request_id;
 
             return resp;
         }
@@ -21,9 +21,8 @@ struct response_r zmk_rpc_handle_request(const struct request *req) {
 
     LOG_WRN("No HANDLER FOUND");
     // TODO: NOT SUPPORTED
-    return (struct response_r){
-
-    };
+    zmk_Response resp = zmk_Response_init_zero;
+    return resp;
 }
 
 static struct zmk_rpc_subsystem *find_subsystem_for_choice(uint8_t choice) {
@@ -46,6 +45,8 @@ static int zmk_rpc_init(void) {
 
         __ASSERT(sub != NULL, "RPC Handler for unknown subsystem choice %d",
                  handler->subsystem_choice);
+
+        LOG_DBG("Init handler %d sub %d", handler->request_choice, sub->subsystem_choice);
 
         if (prev_choice < 0) {
             sub->handlers_start_index = i;

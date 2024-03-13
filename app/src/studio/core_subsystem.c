@@ -8,10 +8,11 @@ ZMK_RPC_SUBSYSTEM(core)
 
 #define CORE_RESPONSE(type, ...) ZMK_RPC_RESPONSE(core, type, __VA_ARGS__)
 
-struct response_r get_lock_status(const struct request *req) {
-    return CORE_RESPONSE(get_lock_state_response, {
-                                                      .locked = false,
-                                                  });
+zmk_Response get_lock_status(const zmk_Request *req) {
+    zmk_core_get_lock_status_response resp = zmk_core_get_lock_status_response_init_zero;
+    resp.locked = true;
+
+    return CORE_RESPONSE(get_lock_status, resp);
 }
 
-ZMK_RPC_SUBSYSTEM_HANDLER(core, core_request_get_lock_state_m_c, get_lock_status);
+ZMK_RPC_SUBSYSTEM_HANDLER(core, get_lock_status);

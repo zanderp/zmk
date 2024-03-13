@@ -16,7 +16,10 @@
 #include "uuid.h"
 #include "common.h"
 
-#include <studio-msgs_decode.h>
+#include <pb_encode.h>
+#include <pb_decode.h>
+
+#include <proto/zmk/studio-msgs.pb.h>
 
 #include <zephyr/logging/log.h>
 
@@ -54,7 +57,7 @@ static ssize_t read_rpc_resp(struct bt_conn *conn, const struct bt_gatt_attr *at
     // return bt_gatt_attr_read(conn, attr, buf, len, offset, &level, sizeof(uint8_t));
 }
 
-static void send_response(struct bt_conn *conn, const struct response_r *response);
+static void send_response(struct bt_conn *conn, const zmk_Response *response);
 
 static ssize_t write_rpc_req(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf,
                              uint16_t len, uint16_t offset, uint8_t flags) {
@@ -65,12 +68,14 @@ static ssize_t write_rpc_req(struct bt_conn *conn, const struct bt_gatt_attr *at
 
         if (rpc_framing_state == FRAMING_STATE_IDLE && rx_buf.len > 0) {
             LOG_DBG("Got a full message");
-            struct request req;
-            size_t req_decoded;
-            cbor_decode_request(rx_buf.data, rx_buf.len, &req, &req_decoded);
+            zmk_Request req = zmk_Request_init_zero;
 
-            if (req_decoded == rx_buf.len) {
-                struct response_r resp = zmk_rpc_handle_request(&req);
+            pb_istream_t stream = pb_istream_from_buffer(rx_buf.data, rx_buf.len);
+
+            bool status = pb_decode(&stream, &zmk_Request_msg, &req);
+
+            if (status) {
+                zmk_Response resp = zmk_rpc_handle_request(&req);
 
                 send_response(conn, &resp);
             }
@@ -90,11 +95,19 @@ BT_GATT_SERVICE_DEFINE(
                            write_rpc_req, NULL),
     BT_GATT_CCC(rpc_ccc_cfg_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT));
 
-static void send_response(struct bt_conn *conn, const struct response_r *response) {
+static void send_response(struct bt_conn *conn, const zmk_Response *response) {
     uint8_t resp_data[128];
-    size_t out_size = sizeof(resp_data);
+    pb_ostream_t stream = pb_ostream_from_buffer(resp_data, ARRAY_SIZE(resp_data));
 
-    cbor_encode_response(resp_data, sizeof(resp_data), response, &out_size);
+    /* Now we are ready to encode the message! */
+    bool status = pb_encode(&stream, &zmk_Response_msg, response);
+
+    if (!status) {
+        LOG_ERR("Failed to encode a response message");
+        return;
+    }
+
+    size_t out_size = stream.bytes_written;
 
     uint8_t resp_frame[128];
 

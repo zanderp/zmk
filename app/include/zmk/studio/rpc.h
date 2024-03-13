@@ -2,14 +2,15 @@
 #pragma once
 
 #include <zephyr/sys/iterable_sections.h>
-#include <studio-msgs_types.h>
+
+#include <proto/zmk/studio-msgs.pb.h>
 
 struct zmk_rpc_subsystem;
 
-typedef struct response_r(subsystem_func)(const struct zmk_rpc_subsystem *subsys,
-                                          const struct request *req);
+typedef zmk_Response(subsystem_func)(const struct zmk_rpc_subsystem *subsys,
+                                     const zmk_Request *req);
 
-typedef struct response_r(rpc_func)(const struct request *req);
+typedef zmk_Response(rpc_func)(const zmk_Request *neq);
 
 struct zmk_rpc_subsystem {
     subsystem_func *func;
@@ -25,48 +26,54 @@ struct zmk_rpc_subsystem_handler {
 };
 
 #define ZMK_RPC_SUBSYSTEM(prefix)                                                                  \
-    struct response_r subsystem_func_##prefix(const struct zmk_rpc_subsystem *subsys,              \
-                                              const struct request *req) {                         \
-        uint8_t choice = req->prefix##_subsystem_m.prefix##_request_m.prefix##_request_choice;     \
+    zmk_Response subsystem_func_##prefix(const struct zmk_rpc_subsystem *subsys,                   \
+                                         const zmk_Request *req) {                                 \
+        uint8_t which_req = req->subsystem.prefix.which_request_type;                              \
+        LOG_DBG("Got subsystem func for %d", subsys->subsystem_choice);                            \
                                                                                                    \
         for (int i = subsys->handlers_start_index; i <= subsys->handlers_end_index; i++) {         \
             struct zmk_rpc_subsystem_handler *sub_handler;                                         \
             STRUCT_SECTION_GET(zmk_rpc_subsystem_handler, i, &sub_handler);                        \
-            if (sub_handler->request_choice == choice) {                                           \
+            if (sub_handler->request_choice == which_req) {                                        \
                 return sub_handler->func(req);                                                     \
             }                                                                                      \
         }                                                                                          \
-        LOG_ERR("No handler func found for %d", choice);                                           \
-        return (struct response_r){};                                                              \
+        LOG_ERR("No handler func found for %d", which_req);                                        \
+        zmk_Response fallback_resp = zmk_Response_init_zero;                                       \
+        return fallback_resp;                                                                      \
     }                                                                                              \
     STRUCT_SECTION_ITERABLE(zmk_rpc_subsystem, prefix##_subsystem) = {                             \
         .func = subsystem_func_##prefix,                                                           \
-        .subsystem_choice = request_union_##prefix##_subsystem_m_c,                                \
+        .subsystem_choice = zmk_Request_##prefix##_tag,                                            \
     };
 
-#define ZMK_RPC_SUBSYSTEM_HANDLER(prefix, request_choice_val, func_val)                            \
+#define ZMK_RPC_SUBSYSTEM_HANDLER(prefix, request_id)                                              \
     STRUCT_SECTION_ITERABLE(zmk_rpc_subsystem_handler,                                             \
-                            prefix##_subsystem_handler_##request_choice_val) = {                   \
-        .func = func_val,                                                                          \
-        .subsystem_choice = request_union_##prefix##_subsystem_m_c,                                \
-        .request_choice = request_choice_val,                                                      \
+                            prefix##_subsystem_handler_##request_id) = {                           \
+        .func = request_id,                                                                        \
+        .subsystem_choice = zmk_Request_##prefix##_tag,                                            \
+        .request_choice = zmk_##prefix##_response_##request_id##_tag,                              \
     };
 
-#define ZMK_RPC_RESPONSE(subsys, type, ...)                                                        \
-    ((struct response_r){                                                                          \
-        .response_choice = request_response_m_c,                                                   \
-        .request_response_m =                                                                      \
+#define ZMK_RPC_RESPONSE(subsys, _type, ...)                                                       \
+    ((zmk_Response){                                                                               \
+        .which_type = zmk_Response_request_response_tag,                                           \
+        .type =                                                                                    \
             {                                                                                      \
-                .response_payload_m =                                                              \
+                .request_response =                                                                \
                     {                                                                              \
-                        .response_payload_choice = response_payload_##subsys##_response_m_c,       \
-                        .subsys##_response_m =                                                     \
+                        .which_subsystem = zmk_RequestResponse_##subsys##_tag,                     \
+                        .subsystem =                                                               \
                             {                                                                      \
-                                .union_choice = subsys##_response_union_##type##_m_c,              \
-                                .type##_m = __VA_ARGS__,                                           \
+                                .subsys =                                                          \
+                                    {                                                              \
+                                        .which_response_type =                                     \
+                                            zmk_##subsys##_response_##_type##_tag,                 \
+                                        .response_type = {._type = __VA_ARGS__},                   \
+                                    },                                                             \
                             },                                                                     \
                     },                                                                             \
             },                                                                                     \
     })
 
-struct response_r zmk_rpc_handle_request(const struct request *req);
+zmk_Response zmk_rpc_handle_request(const zmk_Request *req);

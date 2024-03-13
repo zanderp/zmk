@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package zmk.behaviors;
+
+message request {
+    oneof request_type {
+        bool list_all_behaviors = 1;
+        get_behavior_details_request get_behavior_details = 2;
+    }
+}
+
+message get_behavior_details_request {
+    uint32 behavior_id = 1;
+}
+
+message response {
+    oneof response_type {
+        list_all_behaviors_response list_all_behaviors = 1;
+        get_behavior_details_response get_behavior_details = 2;
+    }
+}
+
+message list_all_behaviors_response {
+    repeated uint32 behaviors = 1;
+}
+
+message get_behavior_details_response {
+    uint32 id = 1;
+    string friendly_name = 2;
+    behavior_binding_parameter_details param1 = 3;
+    behavior_binding_parameter_details param2 = 4;
+}
+
+message behavior_binding_parameter_details {
+    behavior_binding_parameter_domain domain = 1;
+    string name = 2;
+}
+
+enum behavior_binding_parameter_domain {
+    Nil = 0;
+    HIDUsage = 1;
+    LayerIndex = 2;
+}

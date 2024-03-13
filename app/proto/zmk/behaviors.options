@@ -1,0 +1,2 @@
+zmk.behaviors.list_all_behaviors_response.behaviors max_count:20
+zmk.behaviors.get_behavior_details_response.friendly_name max_size:20
