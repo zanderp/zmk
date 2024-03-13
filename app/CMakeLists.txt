@@ -67,6 +67,10 @@ if ((NOT CONFIG_ZMK_SPLIT) OR CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
   target_sources(app PRIVATE src/events/layer_state_changed.c)
   target_sources(app PRIVATE src/events/modifiers_state_changed.c)
   target_sources(app PRIVATE src/events/keycode_state_changed.c)
+
+  target_sources_ifdef(CONFIG_ZMK_INDICATOR_LED app PRIVATE src/indicator_led.c)
+  target_sources_ifdef(CONFIG_ZMK_INDICATOR app PRIVATE src/indicator.c)
+  target_sources_ifdef(CONFIG_ZMK_INDICATOR_LAYERONE app PRIVATE src/indicator_layerone.c)
   target_sources_ifdef(CONFIG_ZMK_HID_INDICATORS app PRIVATE src/hid_indicators.c)
 
   if (CONFIG_ZMK_BLE)

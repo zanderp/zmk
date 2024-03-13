@@ -1,7 +1,34 @@
 {
   "files.associations": {
     "*.overlay": "dts",
-    "*.keymap": "dts"
+    "*.keymap": "dts",
+    "led.h": "c",
+    "backlight.h": "c",
+    "init.h": "c",
+    "devicetree.h": "c",
+    "led_indicator.h": "c",
+    "kernel.h": "c",
+    "mouse.h": "c",
+    "hid_indicators.h": "c",
+    "usb_device.h": "c",
+    "usb_hid.h": "c",
+    "gpio.h": "c",
+    "event_manager.h": "c",
+    "settings.h": "c",
+    "indicator.h": "c",
+    "dt-util.h": "c",
+    "layer_state_changed.h": "c",
+    "position_state_changed.h": "c",
+    "hid_indicators_changed.h": "c",
+    "settings_file.h": "c",
+    "indicator_layerone.h": "c",
+    "usb_conn_state_changed.h": "c",
+    "activity_state_changed.h": "c",
+    "input_config.h": "c",
+    "trackpad9900.h": "c",
+    "hid.h": "c",
+    "hid_usage_pages.h": "c",
+    "ext_power.h": "c"
   },
   "python.formatting.provider": "black",
   "[c]": {
@@ -18,5 +45,7 @@
   "[css][json][jsonc][html][markdown][yaml]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "C_Cpp.errorSquiggles": "disabled",
+  "cmake.sourceDirectory": "/workspaces/zmk/app/module/drivers/sensor"
 }

@@ -1,0 +1,61 @@
+/*
+ * Copyright (c) 2023 ZitaoTech
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/outputs.h>
+#include <dt-bindings/zmk/mouse.h>
+#include <dt-bindings/zmk/backlight.h>
+#include <dt-bindings/zmk/ext_power.h>
+
+
+#define SYM 1
+#define UPPER 2
+
+
+/ {
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+
+            bindings = <
+    &mkp LCLK                                                                                                &mkp RCLK
+    &kp CLCK            &kp C_AC_SEARCH                 &kp N3                &kp K_BACK                     &mkp MCLK
+    &kp Q      &kp W    &kp E    &kp R    &kp T     &kp Y         &kp U       &kp I           &kp O          &kp P
+    &kp A      &kp S    &kp D    &kp F    &kp G     &kp H         &kp J       &kp K           &kp L          &kp BSPC
+    &kp LSHFT  &kp Z    &kp X    &kp C    &kp V     &kp B         &kp N       &kp M           &kp DLLR       &kp ENTER
+    &kp LCTRL           &kp LALT                          &kp SPACE           &tog SYM                       &tog UPPER
+            >;
+        };
+
+        sym_layer {
+
+            bindings = <
+    &mkp LCLK                                                                                               &mkp RCLK
+    &kp CLCK            &kp LGUI                   &kp N3                         &kp C_AC_BACK             &kp C_AC_HOME 
+    &kp HASH   &kp N1   &kp N2   &kp N3   &kp LPAR      &kp RPAR      &kp UNDER   &kp MINUS      &kp PLUS   &kp AT
+    &kp STAR   &kp N4   &kp N5   &kp N6   &kp SLASH     &kp COLON     &kp SEMI    &kp APOS       &kp DQT    &kp BSPC
+    &kp LSHFT  &kp N7   &kp N8   &kp N9   &kp QMARK     &kp EXCL      &kp COMMA   &kp DOT        &kp C_MUTE &kp ENTER
+    &kp LCTRL           &kp N0                     &kp SPACE                      &tog SYM                  &tog UPPER
+            >;
+        };
+
+        upper_layer {
+
+            bindings = <
+    &msc SCRL_UP                                                                                                       &msc SCRL_DOWN
+    &bt BT_SEL 0          &bt BT_SEL 1              &bt BT_CLR                        &bt BT_SEL 2                     &bt BT_SEL 3
+    &mmv MOVE_UP &kp UP   &kp E     &kp R     &ext_power EP_TOG &kp Y         &kp U       &kp I          &kp O         &kp P
+    &kp LEFT     &kp DOWN &kp RIGHT &kp F     &kp BSLH          &kp H         &kp J       &kp K          &kp L         &kp BSPC
+    &kp LSHFT    &kp Z    &kp X     &kp C     &bl BL_DEC        &bl BL_TOG    &bl BL_INC  &kp M          &bootloader   &kp ENTER
+    &kp LCTRL             &kp LALT                  &out OUT_TOG                      &tog SYM                         &tog UPPER
+            >;
+        };
+    };
+};
+
