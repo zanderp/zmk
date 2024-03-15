@@ -25,7 +25,7 @@
 
             bindings = <
     &mkp LCLK                                                                                                &mkp RCLK
-    &kp CLCK            &kp C_AC_SEARCH                 &kp N3                &kp K_BACK                     &mkp MCLK
+    &kp CLCK            &kp LGUI                          &kp N3                &kp K_BACK                     &mkp MCLK
     &kp Q      &kp W    &kp E    &kp R    &kp T     &kp Y         &kp U       &kp I           &kp O          &kp P
     &kp A      &kp S    &kp D    &kp F    &kp G     &kp H         &kp J       &kp K           &kp L          &kp BSPC
     &kp LSHFT  &kp Z    &kp X    &kp C    &kp V     &kp B         &kp N       &kp M           &kp DLLR       &kp ENTER

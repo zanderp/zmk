@@ -45,7 +45,7 @@ struct indicator_led_cycle {
     bool cycle_direction;
 };
 static struct indicator_led_cycle led_cycle = {
-    .brightness = 0,
+    .brightness = CONFIG_ZMK_IDICATOR_LAYER_CYCLE_MINBRT,
     .cycle_direction = true,
 };
 static struct k_work_delayable polling_work;
@@ -169,7 +169,7 @@ static inline void cycle_onoff(bool onoff) {
 }
 static void polling_work_work_handler(struct k_work *work) {
     for (int i = 0; i < 3; i++) {
-        if (zmk_keymap_highest_layer_active(i)) {
+        if (zmk_keymap_layer_active(i)) {
             switch (i) {
             case 0:
                 cycle_onoff(false);

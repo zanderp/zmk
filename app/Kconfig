@@ -383,96 +383,19 @@ config ZMK_IDICATOR_BRT_STEP
 #ZMK_INDICATOR_LED
 endif
 
-menuconfig ZMK_INDICATOR
-    bool "LED indicator"
-    select LED
+menuconfig ZMK_INDICATOR_CAPSLOCK
+    bool "LED indicator_capslock"
 
-if ZMK_INDICATOR
+if ZMK_INDICATOR_CAPSLOCK
 
-config ZMK_INDICATOR_BRT_STEP
-    int "Brightness step in percent"
+config ZMK_INDICATOR_CAPSLOCK_BRT
+    int "Default Brightness On Start"
     range 1 100
     default 20
 
-config ZMK_INDICATOR_BRT_START
-    int "Default brightness in percent"
-    range 1 100
-    default 40
-
-config ZMK_INDICATOR_ON_START
-    bool "Default indicator state"
-    default y
-
-config ZMK_INDICATOR_AUTO_OFF_IDLE
-    bool "Turn off indicator when keyboard goes into idle state"
-
-config ZMK_INDICATOR_AUTO_OFF_USB
-    bool "Turn off indicator when USB is disconnected"
-
-#ZMK_INDICATOR
+#ZMK_INDICATOR_CAPSLOCK
 endif
 
-menuconfig ZMK_INDICATOR_LAYERONE
-    bool "LED indicator layerone"
-    select LED
-
-if ZMK_INDICATOR_LAYERONE
-
-config ZMK_INDICATOR_LAYERONE_BRT_STEP
-    int "Brightness step in percent"
-    range 1 100
-    default 20
-
-config ZMK_INDICATOR_LAYERONE_BRT_START
-    int "Default brightness in percent"
-    range 1 100
-    default 20
-
-config ZMK_INDICATOR_LAYERONE_ON_START
-    bool "Default indicator state"
-    default y
-
-config ZMK_INDICATOR_LAYERONE_AUTO_OFF_IDLE
-    bool "Turn off indicator when keyboard goes into idle state"
-
-config ZMK_INDICATOR_LAYERONE_AUTO_OFF_USB
-    bool "Turn off indicator when USB is disconnected"
-
-config ZMK_INDICATOR_LAYERONE_AUTO_OFF_SWITCH_LAYERONE
-    bool "Turn off indicator when USB goes into layer one"
-
-#ZMK_INDICATOR_LAYERONE
-endif
-
-
-menuconfig ZMK_INDICATOR_LAYERTWO
-    bool "LED indicator layertwo"
-    select LED
-
-if ZMK_INDICATOR_LAYERTWO
-
-config ZMK_INDICATOR_LAYERTWO_BRT_STEP
-    int "Brightness step in percent"
-    range 1 100
-    default 20
-
-config ZMK_INDICATOR_LAYERTWO_BRT_START
-    int "Default brightness in percent"
-    range 1 100
-    default 20
-
-config ZMK_INDICATOR_LAYERTWO_ON_START
-    bool "Default indicator state"
-    default y
-
-config ZMK_INDICATOR_LAYERTWO_AUTO_OFF_USB
-    bool "Turn off indicator when USB is disconnected"
-
-config ZMK_INDICATOR_LAYERTWO_AUTO_OFF_SWITCH_LAYERTWO
-    bool "Turn off indicator when USB goes into layer two"
-
-#ZMK_INDICATOR_LAYERTWO
-endif
 
 #Display/LED Options
 endmenu
