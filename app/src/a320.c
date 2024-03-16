@@ -10,7 +10,12 @@
 #include <zephyr/sys/crc.h>
 #include <zephyr/logging/log.h>
 
-#include "a320.h"
+#include <dt-bindings/zmk/mouse.h>
+#include <zmk/hid_indicators.h>
+#include <zmk/indicator_capslock.h>
+#include <zmk/mouse.h>
+#include <zmk/hid.h>
+#include <zmk/a320.h>
 
 LOG_MODULE_REGISTER(A320, CONFIG_SENSOR_LOG_LEVEL);
 K_THREAD_STACK_DEFINE(a320_stack_area, 512);
@@ -47,9 +52,53 @@ static int a320_channel_get(const struct device *dev, enum sensor_channel chan,
     const uint8_t ifmotion = a320_read_reg(dev, Motion);
     const uint8_t ovflow = a320_read_reg(dev, Motion);
     if ((ifmotion & BIT_MOTION_MOT) && !(ovflow & BIT_MOTION_OVF)) {
-        val->val1 = a320_read_reg(dev, Delta_X);
-        val->val2 = a320_read_reg(dev, Delta_Y);
-        LOG_DBG("x value : %d , y value : %d\r\n", val->val1, val->val2);
+        char target_9900[] = "bb9900";
+        char target_q10[] = "bbq10";
+        char target_q20[] = "bbq20";
+        char target_q30[] = "bbpassport";
+        char target_9981[] = "bb9981";
+        char target_9983[] = "bb9983";
+        if (strcmp(CONFIG_ZMK_KEYBOARD_NAME, target_9900) == 0) {
+            int8_t y = a320_read_reg(dev, Delta_X);
+            int8_t x = a320_read_reg(dev, Delta_Y);
+            // LOG_DBG("x value : %d , y value : %d\r\n", val->val1, val->val2);
+            int8_t scroll_x = 0;
+            int8_t scroll_y = 0;
+            if (zmk_hid_indicators_get_current_profile() == 2 ||
+                zmk_hid_indicators_get_current_profile() == 3 ||
+                zmk_hid_indicators_get_current_profile() == 7) {
+                if (abs(y) >= 128) {
+                    scroll_x = x / 24;
+                    scroll_y = -y / 24;
+                } else if (abs(y) >= 64 && abs(y) < 128) {
+                    scroll_x = x / 16;
+                    scroll_y = -y / 16;
+                } else if (abs(y) >= 32 && abs(y) < 64) {
+                    scroll_x = x / 12;
+                    scroll_y = -y / 12;
+                } else if (abs(y) >= 21 && abs(y) < 32) {
+                    scroll_x = x / 8;
+                    scroll_y = -y / 8;
+                } else if (abs(y) >= 3 && abs(y) < 20) {
+                    scroll_x = (x > 0) ? 1 : (x < 0) ? -1 : 0;
+                    scroll_y = -((y > 0) ? 1 : (y < 0) ? -1 : 0);
+                } else if (abs(y) >= 0 && abs(y) < 2) {
+                    scroll_x = 0;
+                    scroll_y = 0;
+                }
+                k_sleep(K_MSEC(20));
+                x = 0;
+                y = 0;
+            } else {
+                x = ((x < 127) ? x : (x - 256)) * 1.5;
+                y = ((y < 127) ? y : (y - 256)) * 1.5;
+            }
+            zmk_hid_mouse_movement_set(0, 0);
+            zmk_hid_mouse_movement_update(x, y);
+            zmk_hid_mouse_scroll_set(0, 0);
+            zmk_hid_mouse_scroll_update(scroll_x, scroll_y);
+            zmk_endpoints_send_mouse_report();
+        }
         return 0;
     }
     return -1;
@@ -87,9 +136,6 @@ static int a320_init(const struct device *dev) {
     a320_read_reg(dev, Motion);
     a320_read_reg(dev, Delta_X);
     a320_read_reg(dev, Delta_Y);
-    // 15. LED_Control
-    // ...
-
     a320_tid =
         k_thread_create(&a320_thread_data, a320_stack_area, K_THREAD_STACK_SIZEOF(a320_stack_area),
                         a320_polling_thread_entry, (void *)dev, NULL, NULL, 5, 0, K_NO_WAIT);
@@ -100,6 +146,6 @@ static int a320_init(const struct device *dev) {
     struct a320_data a3200_data_##inst;                                                            \
     static const struct a320_config a3200_cfg_##inst = {.bus = I2C_DT_SPEC_INST_GET(inst)};        \
     DEVICE_DT_INST_DEFINE(inst, a320_init, NULL, &a3200_data_##inst, &a3200_cfg_##inst,            \
-                          POST_KERNEL, CONFIG_SENSOR_INIT_PRIORITY, &a320_driver_api);
+                          POST_KERNEL, 60, &a320_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(A320_DEFINE)

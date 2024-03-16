@@ -1,8 +1,8 @@
 # bb9900
 
-![bb9900](https://i.imgur.com/0YWv5PE.png)
+![bb9900](https://github.com/ZitaoTech/BB9900-USB_BLE_Keyboard/blob/main/Pics/View1.png)
 
-The bb9900 is an ultraportable keyboard with trackpad. https://nicekeyboards.com/nice-60
+The bb9900 is an ultraportable keyboard with trackpad. https://github.com/ZitaoTech/BB9900-USB_BLE_Keyboard
 
 ## Building bb9900 ZMK firmware
 

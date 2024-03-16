@@ -14,7 +14,7 @@
 #include <zephyr/settings/settings.h>
 
 #include <zmk/activity.h>
-#include <zmk/indicator.h>
+#include <zmk/hid_indicators.h>
 #include <zmk/indicator_capslock.h>
 #include <zmk/usb.h>
 #include <zmk/event_manager.h>
@@ -49,12 +49,12 @@ static void polling_work_work_handler(struct k_work *work);
 
 static int zmk_indicator_capslock_update() {
     uint8_t brt = zmk_indicator_capslock_get_brt();
-    LOG_DBG("Update indicator_capslock_ brightness: %d%%", brt);
+    // LOG_DBG("Update indicator_capslock_ brightness: %d%%", brt);
 
     for (int i = 0; i < INDICATOR_LED_NUM_LEDS; i++) {
         int rc = led_set_brightness(indicaps_dev, i, brt);
         if (rc != 0) {
-            LOG_ERR("Failed to update indicator_led LED %d: %d", i, rc);
+            // LOG_ERR("Failed to update indicator_led LED %d: %d", i, rc);
             return rc;
         }
     }
@@ -67,7 +67,6 @@ static int zmk_indicator_capslock_init(void) {
         return -ENODEV;
     }
     k_work_init_delayable(&polling_work, polling_work_work_handler);
-    k_work_init_delayable(&cycle_work, cycle_work_work_handler);
     k_work_reschedule(&polling_work, K_MSEC(100));
 
     return zmk_indicator_capslock_update();
@@ -83,7 +82,7 @@ static int zmk_indicator_capslock_update_and_save() {
 }
 
 int zmk_indicator_capslock_on() {
-    state.brightness = MAX(state.brightness, CONFIG_ZMK_IDICATOR_BRT_STEP);
+    state.brightness = CONFIG_ZMK_INDICATOR_CAPSLOCK_BRT;
     state.on = true;
     return zmk_indicator_capslock_update_and_save();
 }
@@ -95,17 +94,24 @@ int zmk_indicator_capslock_off() {
 
 bool zmk_indicator_capslock_is_on() { return state.on; }
 
+int zmk_indicator_capslock_set_brt(uint8_t brightness) {
+    state.brightness = MIN(brightness, BRT_MAX);
+    state.on = (state.brightness > 0);
+    return zmk_indicator_capslock_update_and_save();
+}
+
 uint8_t zmk_indicator_capslock_get_brt() { return state.on ? state.brightness : 0; }
 
 static void polling_work_work_handler(struct k_work *work) {
-    if (zmk_hid_indicators_get_current_profile() == 3 ||
-        zmk_hid_indicators_get_current_profile() == 2) {
+    if (zmk_hid_indicators_get_current_profile() == 2 ||
+        zmk_hid_indicators_get_current_profile() == 3 ||
+        zmk_hid_indicators_get_current_profile() == 7) {
         zmk_indicator_capslock_set_brt(CONFIG_ZMK_INDICATOR_CAPSLOCK_BRT);
         zmk_indicator_capslock_on();
     } else {
         zmk_indicator_capslock_off();
     }
-    k_work_reschedule(&polling_work, K_MSEC(100));
+    k_work_reschedule(&polling_work, K_MSEC(50));
 }
 
 SYS_INIT(zmk_indicator_capslock_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);

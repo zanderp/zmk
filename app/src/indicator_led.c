@@ -59,12 +59,12 @@ static void polling_work_work_handler(struct k_work *work);
 
 static int zmk_indicator_led_update() {
     uint8_t brt = zmk_indicator_led_get_brt();
-    LOG_DBG("Update indicator_led brightness: %d%%", brt);
+    // LOG_DBG("Update indicator_led brightness: %d%%", brt);
 
     for (int i = 0; i < INDICATOR_LED_NUM_LEDS; i++) {
         int rc = led_set_brightness(indiled_dev, i, brt);
         if (rc != 0) {
-            LOG_ERR("Failed to update indicator_led LED %d: %d", i, rc);
+            // LOG_ERR("Failed to update indicator_led LED %d: %d", i, rc);
             return rc;
         }
     }

@@ -29,7 +29,8 @@
     "hid.h": "c",
     "hid_usage_pages.h": "c",
     "ext_power.h": "c",
-    "indicator_capslock.h": "c"
+    "indicator_capslock.h": "c",
+    "*.s": "c"
   },
   "python.formatting.provider": "black",
   "[c]": {
