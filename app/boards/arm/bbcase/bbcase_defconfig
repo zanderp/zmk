@@ -1,0 +1,36 @@
+# Copyright (c) 2023 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+CONFIG_SOC_SERIES_RP2XXX=y
+CONFIG_SOC_RP2040=y
+CONFIG_BOARD_BBCASE=y
+CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC=240000000
+
+# Enable USB CDC ACM logging for debugging
+CONFIG_ZMK_USB_LOGGING=n
+
+# Sleep Setting
+CONFIG_ZMK_SLEEP=n
+CONFIG_ZMK_EXT_POWER=y
+CONFIG_ZMK_IDLE_TIMEOUT=30000
+
+
+
+# Debuncing Setting 
+CONFIG_ZMK_KSCAN_DEBOUNCE_PRESS_MS=10
+CONFIG_ZMK_KSCAN_DEBOUNCE_RELEASE_MS=10
+
+# HID indicator configuration
+CONFIG_ZMK_HID_INDICATORS=y
+
+
+# Enable reset by default
+CONFIG_RESET=y
+
+# Code partition needed to target the correct flash range
+CONFIG_USE_DT_CODE_PARTITION=y
+
+# Output UF2 by default, native bootloader supports it.
+CONFIG_BUILD_OUTPUT_UF2=y
+
+CONFIG_ZMK_USB=y

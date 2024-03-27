@@ -55,12 +55,95 @@ static int a320_channel_get(const struct device *dev, enum sensor_channel chan,
         char target_9900[] = "bb9900";
         char target_q10[] = "bbq10";
         char target_q20[] = "bbq20";
-        char target_q30[] = "bbpassport";
+        char target_q30[] = "bbq30";
         char target_9981[] = "bb9981";
         char target_9983[] = "bb9983";
         if (strcmp(CONFIG_ZMK_KEYBOARD_NAME, target_9900) == 0) {
             int8_t y = a320_read_reg(dev, Delta_X);
             int8_t x = a320_read_reg(dev, Delta_Y);
+            // LOG_DBG("x value : %d , y value : %d\r\n", val->val1, val->val2);
+            int8_t scroll_x = 0;
+            int8_t scroll_y = 0;
+            if (zmk_hid_indicators_get_current_profile() == 2 ||
+                zmk_hid_indicators_get_current_profile() == 3 ||
+                zmk_hid_indicators_get_current_profile() == 7) {
+                if (abs(y) >= 128) {
+                    scroll_x = x / 24;
+                    scroll_y = -y / 24;
+                } else if (abs(y) >= 64 && abs(y) < 128) {
+                    scroll_x = x / 16;
+                    scroll_y = -y / 16;
+                } else if (abs(y) >= 32 && abs(y) < 64) {
+                    scroll_x = x / 12;
+                    scroll_y = -y / 12;
+                } else if (abs(y) >= 21 && abs(y) < 32) {
+                    scroll_x = x / 8;
+                    scroll_y = -y / 8;
+                } else if (abs(y) >= 3 && abs(y) < 20) {
+                    scroll_x = (x > 0) ? 1 : (x < 0) ? -1 : 0;
+                    scroll_y = -((y > 0) ? 1 : (y < 0) ? -1 : 0);
+                } else if (abs(y) >= 0 && abs(y) < 2) {
+                    scroll_x = 0;
+                    scroll_y = 0;
+                }
+                k_sleep(K_MSEC(20));
+                x = 0;
+                y = 0;
+            } else {
+                x = ((x < 127) ? x : (x - 256)) * 1.5;
+                y = ((y < 127) ? y : (y - 256)) * 1.5;
+            }
+            zmk_hid_mouse_movement_set(0, 0);
+            zmk_hid_mouse_movement_update(x, y);
+            zmk_hid_mouse_scroll_set(0, 0);
+            zmk_hid_mouse_scroll_update(scroll_x, scroll_y);
+            zmk_endpoints_send_mouse_report();
+        } else if (strcmp(CONFIG_ZMK_KEYBOARD_NAME, target_q10) == 0 ||
+                   strcmp(CONFIG_ZMK_KEYBOARD_NAME, target_q30) == 0 ||
+                   strcmp(CONFIG_ZMK_KEYBOARD_NAME, target_9981) == 0 ||
+                   strcmp(CONFIG_ZMK_KEYBOARD_NAME, target_9983) == 0) {
+            int8_t x = a320_read_reg(dev, Delta_X);
+            int8_t y = -1 * a320_read_reg(dev, Delta_Y);
+            // LOG_DBG("x value : %d , y value : %d\r\n", val->val1, val->val2);
+            int8_t scroll_x = 0;
+            int8_t scroll_y = 0;
+            if (zmk_hid_indicators_get_current_profile() == 2 ||
+                zmk_hid_indicators_get_current_profile() == 3 ||
+                zmk_hid_indicators_get_current_profile() == 7) {
+                if (abs(y) >= 128) {
+                    scroll_x = x / 24;
+                    scroll_y = -y / 24;
+                } else if (abs(y) >= 64 && abs(y) < 128) {
+                    scroll_x = x / 16;
+                    scroll_y = -y / 16;
+                } else if (abs(y) >= 32 && abs(y) < 64) {
+                    scroll_x = x / 12;
+                    scroll_y = -y / 12;
+                } else if (abs(y) >= 21 && abs(y) < 32) {
+                    scroll_x = x / 8;
+                    scroll_y = -y / 8;
+                } else if (abs(y) >= 3 && abs(y) < 20) {
+                    scroll_x = (x > 0) ? 1 : (x < 0) ? -1 : 0;
+                    scroll_y = -((y > 0) ? 1 : (y < 0) ? -1 : 0);
+                } else if (abs(y) >= 0 && abs(y) < 2) {
+                    scroll_x = 0;
+                    scroll_y = 0;
+                }
+                k_sleep(K_MSEC(20));
+                x = 0;
+                y = 0;
+            } else {
+                x = ((x < 127) ? x : (x - 256)) * 1.5;
+                y = ((y < 127) ? y : (y - 256)) * 1.5;
+            }
+            zmk_hid_mouse_movement_set(0, 0);
+            zmk_hid_mouse_movement_update(x, y);
+            zmk_hid_mouse_scroll_set(0, 0);
+            zmk_hid_mouse_scroll_update(scroll_x, scroll_y);
+            zmk_endpoints_send_mouse_report();
+        } else if (strcmp(CONFIG_ZMK_KEYBOARD_NAME, target_q20) == 0) {
+            int8_t x = -1 * a320_read_reg(dev, Delta_X);
+            int8_t y = a320_read_reg(dev, Delta_Y);
             // LOG_DBG("x value : %d , y value : %d\r\n", val->val1, val->val2);
             int8_t scroll_x = 0;
             int8_t scroll_y = 0;
