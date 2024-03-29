@@ -39,21 +39,32 @@ struct indicator_led_state {
     uint8_t brightness;
     bool on;
     bool cycle_state;
+    bool blinky_state;
 };
 struct indicator_led_cycle {
     uint8_t brightness;
     bool cycle_direction;
 };
+struct indicator_led_blinky {
+    uint8_t brightness;
+    bool blinky_direction;
+};
 static struct indicator_led_cycle led_cycle = {
     .brightness = CONFIG_ZMK_IDICATOR_LAYER_CYCLE_MINBRT,
     .cycle_direction = true,
 };
+static struct indicator_led_blinky led_blinky = {
+    .brightness = CONFIG_ZMK_IDICATOR_LAYER_BRT,
+    .blinky_direction = true,
+};
 static struct k_work_delayable polling_work;
 static struct k_work_delayable cycle_work;
+static struct k_work_delayable blinky_work;
 static struct indicator_led_state state = {
     .brightness = CONFIG_ZMK_IDICATOR_LAYER_BRT,
     .on = IS_ENABLED(CONFIG_ZMK_IDICATOR_ON_START),
     .cycle_state = false,
+    .blinky_state = false,
 };
 static void polling_work_work_handler(struct k_work *work);
 
@@ -82,11 +93,30 @@ void indicator_led_brightness_cal(void) {
         (led_cycle.cycle_direction ? (led_cycle.brightness + CONFIG_ZMK_IDICATOR_BRT_STEP)
                                    : (led_cycle.brightness - CONFIG_ZMK_IDICATOR_BRT_STEP));
 }
+
+void indicator_led_brightness_blinky(void) {
+    if (led_blinky.brightness == CONFIG_ZMK_IDICATOR_LAYER_CYCLE_MAXBRT) {
+        led_blinky.blinky_direction = false;
+    }
+    if (led_blinky.brightness == CONFIG_ZMK_IDICATOR_LAYER_CYCLE_MINBRT) {
+        led_blinky.blinky_direction = true;
+    }
+    led_blinky.brightness =
+        (led_blinky.blinky_direction ? (CONFIG_ZMK_IDICATOR_LAYER_CYCLE_MAXBRT)
+                                     : (CONFIG_ZMK_IDICATOR_LAYER_CYCLE_MINBRT));
+}
+
 static void cycle_work_work_handler(struct k_work *work) {
     indicator_led_brightness_cal();
 
     zmk_indicator_led_set_brt(led_cycle.brightness);
     k_work_reschedule(&cycle_work, K_MSEC(CONFIG_ZMK_IDICATOR_LAYER_CYCLE_INTERVAL));
+}
+static void blinky_work_work_handler(struct k_work *work) {
+    indicator_led_brightness_blinky();
+
+    zmk_indicator_led_set_brt(led_blinky.brightness);
+    k_work_reschedule(&blinky_work, K_MSEC(300));
 }
 static int zmk_indicator_led_init(void) {
     if (!device_is_ready(indiled_dev)) {
@@ -95,6 +125,7 @@ static int zmk_indicator_led_init(void) {
     }
     k_work_init_delayable(&polling_work, polling_work_work_handler);
     k_work_init_delayable(&cycle_work, cycle_work_work_handler);
+    k_work_init_delayable(&blinky_work, blinky_work_work_handler);
     k_work_reschedule(&polling_work, K_MSEC(100));
 
     return zmk_indicator_led_update();
@@ -154,6 +185,13 @@ static inline void cycle_schedule(void) {
     }
     k_work_cancel_delayable(&cycle_work);
 }
+static inline void blinky_schedule(void) {
+    if (state.blinky_state) {
+        k_work_reschedule(&blinky_work, K_MSEC(10));
+        return;
+    }
+    k_work_cancel_delayable(&blinky_work);
+}
 static inline void cycle_onoff(bool onoff) {
     if (onoff) {
         if (!state.cycle_state) {
@@ -167,24 +205,46 @@ static inline void cycle_onoff(bool onoff) {
         cycle_schedule();
     }
 }
+static inline void blinky_onoff(bool onoff) {
+    if (onoff) {
+        if (!state.blinky_state) {
+            state.blinky_state = true;
+            blinky_schedule();
+        }
+        return;
+    }
+    if (state.blinky_state) {
+        state.blinky_state = false;
+        blinky_schedule();
+    }
+}
 static void polling_work_work_handler(struct k_work *work) {
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 4; i++) {
         if (zmk_keymap_layer_active(i)) {
             switch (i) {
             case 0:
                 cycle_onoff(false);
                 zmk_indicator_led_off();
+                blinky_onoff(false);
                 break;
             case 1:
                 cycle_onoff(false);
                 zmk_indicator_led_set_brt(CONFIG_ZMK_IDICATOR_LAYER_BRT);
                 zmk_indicator_led_on();
+                blinky_onoff(false);
 
                 break;
             case 2:
                 if (!zmk_indicator_led_is_on())
                     zmk_indicator_led_on();
                 cycle_onoff(true);
+                blinky_onoff(false);
+                break;
+            case 3:
+                if (!zmk_indicator_led_is_on())
+                    zmk_indicator_led_on();
+                cycle_onoff(false);
+                blinky_onoff(true);
                 break;
 
             default:
