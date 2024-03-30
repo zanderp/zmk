@@ -67,8 +67,6 @@ int main(void) {
             int8_t y = xy_pos.val1;
             int8_t scroll_x = 0;
             int8_t scroll_y = 0;
-            x = ((x < 127) ? x : (x - 256)) * 1.5;
-            y = ((y < 127) ? y : (y - 256)) * 1.5;
             if (zmk_hid_indicators_get_current_profile() == 2 ||
                 zmk_hid_indicators_get_current_profile() == 3 ||
                 zmk_hid_indicators_get_current_profile() == 7) {
@@ -187,7 +185,7 @@ int main(void) {
             zmk_hid_mouse_scroll_update(scroll_x, scroll_y);
             zmk_endpoints_send_mouse_report();
         }
+        int polling_ms = (1.0 / (float)CONFIG_INPUT_A320_POLLINGRATE) * 1000.0;
+        k_sleep(K_MSEC(polling_ms));
     }
-    int polling_ms = (1.0 / (float)CONFIG_INPUT_A320_POLLINGRATE) * 1000.0;
-    k_sleep(K_MSEC(polling_ms));
 }

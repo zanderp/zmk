@@ -31,7 +31,8 @@
     "ext_power.h": "c",
     "indicator_capslock.h": "c",
     "*.s": "c",
-    "a320.h": "c"
+    "a320.h": "c",
+    "i2c.h": "c"
   },
   "python.formatting.provider": "black",
   "[c]": {
