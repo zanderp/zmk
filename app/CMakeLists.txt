@@ -72,7 +72,6 @@ if ((NOT CONFIG_ZMK_SPLIT) OR CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
   target_sources_ifdef(CONFIG_ZMK_INDICATOR app PRIVATE src/indicator.c)
   target_sources_ifdef(CONFIG_ZMK_INDICATOR_CAPSLOCK app PRIVATE src/indicator_capslock.c)
   target_sources_ifdef(CONFIG_ZMK_HID_INDICATORS app PRIVATE src/hid_indicators.c)
-  target_sources_ifdef(CONFIG_INPUT_A320 app PRIVATE src/a320.c)
 
   if (CONFIG_ZMK_BLE)
     target_sources(app PRIVATE src/events/ble_active_profile_changed.c)

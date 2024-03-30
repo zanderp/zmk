@@ -30,7 +30,8 @@
     "hid_usage_pages.h": "c",
     "ext_power.h": "c",
     "indicator_capslock.h": "c",
-    "*.s": "c"
+    "*.s": "c",
+    "a320.h": "c"
   },
   "python.formatting.provider": "black",
   "[c]": {
