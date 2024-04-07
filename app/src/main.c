@@ -89,7 +89,8 @@ int main(void) {
                     scroll_x = 0;
                     scroll_y = 0;
                 }
-                k_sleep(K_MSEC(20));
+                int Scroll_INTERVAL = CONFIG_TRACKPAD_SCROLL_INTERVAL;
+                k_sleep(K_MSEC(Scroll_INTERVAL));
                 x = 0;
                 y = 0;
             } else {
@@ -132,7 +133,8 @@ int main(void) {
                     scroll_x = 0;
                     scroll_y = 0;
                 }
-                k_sleep(K_MSEC(20));
+                int Scroll_INTERVAL = CONFIG_TRACKPAD_SCROLL_INTERVAL;
+                k_sleep(K_MSEC(Scroll_INTERVAL));
                 x = 0;
                 y = 0;
             } else {
@@ -172,7 +174,8 @@ int main(void) {
                     scroll_x = 0;
                     scroll_y = 0;
                 }
-                k_sleep(K_MSEC(20));
+                int Scroll_INTERVAL = CONFIG_TRACKPAD_SCROLL_INTERVAL;
+                k_sleep(K_MSEC(Scroll_INTERVAL));
                 x = 0;
                 y = 0;
             } else {

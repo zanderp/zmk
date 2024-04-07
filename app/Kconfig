@@ -380,6 +380,10 @@ config ZMK_IDICATOR_BRT_STEP
     range 1 100
     default 30
 
+config ZMK_IDICATOR_BLINK_INTERVAL
+    int "BLINK INTERVAL for INDICATOR LAYER 4"
+    default 300
+
 #ZMK_INDICATOR_LED
 endif
 
@@ -407,6 +411,10 @@ config INPUT_A320_POLLINGRATE
 	help
 	  set the polling rate of a320
 
+config TRACKPAD_SCROLL_INTERVAL
+    int "Trackpad scroll interval"
+    range 10 500
+    default 20
 
 #Display/LED Options
 endmenu
