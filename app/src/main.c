@@ -71,22 +71,22 @@ int main(void) {
                 zmk_hid_indicators_get_current_profile() == 3 ||
                 zmk_hid_indicators_get_current_profile() == 7) {
                 if (abs(y) >= 128) {
-                    scroll_x = x / 24;
+                    scroll_x = -x / 24;
                     scroll_y = -y / 24;
                 } else if (abs(y) >= 64 && abs(y) < 128) {
-                    scroll_x = x / 16;
+                    scroll_x = -x / 16;
                     scroll_y = -y / 16;
                 } else if (abs(y) >= 32 && abs(y) < 64) {
-                    scroll_x = x / 12;
+                    scroll_x = -x / 12;
                     scroll_y = -y / 12;
                 } else if (abs(y) >= 21 && abs(y) < 32) {
-                    scroll_x = x / 8;
+                    scroll_x = -x / 8;
                     scroll_y = -y / 8;
                 } else if (abs(y) >= 3 && abs(y) < 20) {
-                    scroll_x = (x > 0) ? 1 : (x < 0) ? -1 : 0;
+                    scroll_x = -(x > 0) ? 1 : (x < 0) ? -1 : 0;
                     scroll_y = -((y > 0) ? 1 : (y < 0) ? -1 : 0);
                 } else if (abs(y) >= 0 && abs(y) < 2) {
-                    scroll_x = 0;
+                    scroll_x = -(x > 0) ? 1 : (x < 0) ? -1 : 0;;
                     scroll_y = 0;
                 }
                 int Scroll_INTERVAL = CONFIG_TRACKPAD_SCROLL_INTERVAL;
@@ -115,22 +115,22 @@ int main(void) {
                 zmk_hid_indicators_get_current_profile() == 3 ||
                 zmk_hid_indicators_get_current_profile() == 7) {
                 if (abs(y) >= 128) {
-                    scroll_x = x / 24;
+                    scroll_x = -x / 24;
                     scroll_y = -y / 24;
                 } else if (abs(y) >= 64 && abs(y) < 128) {
-                    scroll_x = x / 16;
+                    scroll_x = -x / 16;
                     scroll_y = -y / 16;
                 } else if (abs(y) >= 32 && abs(y) < 64) {
-                    scroll_x = x / 12;
+                    scroll_x = -x / 12;
                     scroll_y = -y / 12;
                 } else if (abs(y) >= 21 && abs(y) < 32) {
-                    scroll_x = x / 8;
+                    scroll_x = -x / 8;
                     scroll_y = -y / 8;
                 } else if (abs(y) >= 3 && abs(y) < 20) {
-                    scroll_x = (x > 0) ? 1 : (x < 0) ? -1 : 0;
+                    scroll_x = -(x > 0) ? 1 : (x < 0) ? -1 : 0;
                     scroll_y = -((y > 0) ? 1 : (y < 0) ? -1 : 0);
                 } else if (abs(y) >= 0 && abs(y) < 2) {
-                    scroll_x = 0;
+                    scroll_x = -(x > 0) ? 1 : (x < 0) ? -1 : 0;;
                     scroll_y = 0;
                 }
                 int Scroll_INTERVAL = CONFIG_TRACKPAD_SCROLL_INTERVAL;
@@ -156,22 +156,22 @@ int main(void) {
                 zmk_hid_indicators_get_current_profile() == 3 ||
                 zmk_hid_indicators_get_current_profile() == 7) {
                 if (abs(y) >= 128) {
-                    scroll_x = x / 24;
+                    scroll_x = -x / 24;
                     scroll_y = -y / 24;
                 } else if (abs(y) >= 64 && abs(y) < 128) {
-                    scroll_x = x / 16;
+                    scroll_x = -x / 16;
                     scroll_y = -y / 16;
                 } else if (abs(y) >= 32 && abs(y) < 64) {
-                    scroll_x = x / 12;
+                    scroll_x = -x / 12;
                     scroll_y = -y / 12;
                 } else if (abs(y) >= 21 && abs(y) < 32) {
-                    scroll_x = x / 8;
+                    scroll_x = -x / 8;
                     scroll_y = -y / 8;
                 } else if (abs(y) >= 3 && abs(y) < 20) {
-                    scroll_x = (x > 0) ? 1 : (x < 0) ? -1 : 0;
+                    scroll_x = -(x > 0) ? 1 : (x < 0) ? -1 : 0;
                     scroll_y = -((y > 0) ? 1 : (y < 0) ? -1 : 0);
                 } else if (abs(y) >= 0 && abs(y) < 2) {
-                    scroll_x = 0;
+                    scroll_x = -(x > 0) ? 1 : (x < 0) ? -1 : 0;;
                     scroll_y = 0;
                 }
                 int Scroll_INTERVAL = CONFIG_TRACKPAD_SCROLL_INTERVAL;
