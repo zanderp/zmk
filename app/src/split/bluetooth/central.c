@@ -398,7 +398,7 @@ static void split_central_process_connection(struct bt_conn *conn) {
     LOG_DBG("Current security for connection: %d", bt_conn_get_security(conn));
 
 #if !IS_ENABLED(CONFIG_BT_GATT_AUTO_SEC_REQ)
-    err = bt_conn_set_security(conn, BT_SECURITY_L2);
+    err = bt_conn_set_security(conn, BT_SECURITY_L1);
     if (err) {
         LOG_ERR("Failed to set security (reason %d)", err);
         return;
